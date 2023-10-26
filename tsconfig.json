@@ -1,15 +1,27 @@
 {
     "compilerOptions": {
-      "target": "ES2020",
+      "target": "ES2022",
       "module": "commonjs",
       "rootDir": "./src",
       "outDir": "./dist",
+      "moduleResolution": "node",
       "removeComments": true,
+      "useUnknownInCatchVariables": true,
+      "allowUnreachableCode": false,
+      "importHelpers": true,
       "resolveJsonModule": true,
       "esModuleInterop": true,
       "forceConsistentCasingInFileNames": true,
       "strict": true,
       "strictNullChecks": true,
-      "skipLibCheck": true
+      "skipLibCheck": true,
+      "typeRoots": [
+        "node_modules/@types"
+      ],
+      "types": [
+        "node"
+      ],
+      "sourceMap": true,
+      "strictPropertyInitialization": true
     }
   }

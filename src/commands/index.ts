@@ -1,4 +1,5 @@
 import * as ping from "./ping";
+import * as gnomed from "./gnomed";
 
 /**
  * This file registers all commands.
@@ -6,4 +7,5 @@ import * as ping from "./ping";
  */
 export const commands = {
   ping,
+  gnomed
 };
