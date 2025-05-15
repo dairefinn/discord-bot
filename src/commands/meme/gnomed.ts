@@ -1,5 +1,12 @@
 import { CommandInteraction, SlashCommandBuilder, Guild } from "discord.js";
-import { AudioPlayer, AudioPlayerStatus, VoiceConnectionStatus, createAudioPlayer, createAudioResource, joinVoiceChannel } from "@discordjs/voice";
+import {
+  AudioPlayer,
+  AudioPlayerStatus,
+  VoiceConnectionStatus,
+  createAudioPlayer,
+  createAudioResource,
+  joinVoiceChannel,
+} from "@discordjs/voice";
 import { join } from "node:path";
 
 /**
@@ -29,7 +36,9 @@ export async function execute(interaction: CommandInteraction) {
 
   // Find out if the user is in a voice channel or not
   if (!member.voice.channel) {
-    return interaction.reply("You must be in a voice channel to use this command.");
+    return interaction.reply(
+      "You must be in a voice channel to use this command."
+    );
   }
 
   if (!member.voice.channel.joinable || !member.voice.channel.isVoiceBased()) {
@@ -46,7 +55,7 @@ export async function execute(interaction: CommandInteraction) {
   const connection = joinVoiceChannel({
     channelId: channelId,
     guildId: guildId,
-    adapterCreator: voiceAdapterCreator
+    adapterCreator: voiceAdapterCreator,
   });
   const audioPlayer: AudioPlayer = createAudioPlayer();
   connection.subscribe(audioPlayer);
@@ -55,20 +64,20 @@ export async function execute(interaction: CommandInteraction) {
 
   connection.on(VoiceConnectionStatus.Connecting, () => {
     console.info("Connecting to voice channel");
-  })
+  });
 
   connection.on(VoiceConnectionStatus.Ready, () => {
     console.info("Connected to voice channel");
-  })
+  });
 
   connection.on(VoiceConnectionStatus.Disconnected, () => {
     console.info("Disconnected from voice channel");
   });
 
-  audioPlayer.on("error", error => {
+  audioPlayer.on("error", (error) => {
     console.error("Error playing audio:", error.message);
     connection.destroy();
-    return interaction.reply("There was an error gnoming you.")
+    return interaction.reply("There was an error gnoming you.");
   });
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
@@ -84,14 +93,14 @@ export async function execute(interaction: CommandInteraction) {
   audioPlayer.on(AudioPlayerStatus.AutoPaused, () => {
     audioPlayer.unpause();
   });
-  
+
   const filePath = join(__dirname, "../assets/audio/gnomed.mp3");
   console.info("File path is: " + filePath);
 
   const audioResource = createAudioResource(filePath, {
     metadata: {
-      title: "Test song name"
-    }
+      title: "Test song name",
+    },
   });
 
   audioPlayer.play(audioResource);

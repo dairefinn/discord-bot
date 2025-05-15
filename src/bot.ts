@@ -23,7 +23,6 @@ client.on(Events.GuildCreate, async (guild) => {
   await deployCommands({ guildId: guild.id });
 });
 
-
 // When a user interacts with the bot, execute the command
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isCommand()) {

@@ -1,4 +1,4 @@
-import { Client, CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { CommandInteraction, SlashCommandBuilder } from "discord.js";
 
 /**
  * This command replies with "Pong!" when called.
