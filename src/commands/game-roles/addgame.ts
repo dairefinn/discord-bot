@@ -4,6 +4,11 @@ import {
   Guild,
   CacheType,
 } from "discord.js";
+import {
+  requireGuild,
+  requireMember,
+  requireStringParameter,
+} from "../../helpers/command-validators";
 
 export const data = new SlashCommandBuilder()
   .setName("addgame")
@@ -55,49 +60,45 @@ export async function autocomplete(interaction: any) {
 }
 
 export async function execute(interaction: CommandInteraction<CacheType>) {
-  console.info("Running the addgame command");
-  console.info("User ID: " + interaction.user.id);
-  console.info("Guild ID: " + interaction.guildId);
-
-  const userId: string = interaction.user.id;
-  const guild: Guild | null = interaction.guild;
-
-  if (!guild) {
-    return interaction.reply("You must be in a server to use this command.");
-  }
-
-  const member = guild.members.cache.get(userId);
-  if (!member) {
-    return interaction.reply("You must be in a server to use this command.");
-  }
-
-  const game = interaction.options.get("name")?.value as string;
-  if (!game) {
-    return interaction.reply("You must provide a game name.");
-  }
-
-  console.info("All prerequisites checks have passed");
-
-  const roleName = `${game} players`;
-  const role = guild.roles.cache.find(
-    (role) => role.name.toLowerCase() === roleName.toLowerCase()
-  );
-
-  if (!role) {
-    return interaction.reply(`The role "${roleName}" does not exist.`);
-  }
-
-  if (member.roles.cache.has(role.id)) {
-    return interaction.reply(`You already have the "${roleName}" role.`);
-  }
-
   try {
-    await member.roles.add(role);
-    console.info(`Added role "${roleName}" to user ${userId}`);
-  } catch (error) {
-    console.error("Error adding role:", error);
-    return interaction.reply("There was an error adding the role.");
-  }
+    console.info("Running the addgame command");
+    console.info("User ID: " + interaction.user.id);
+    console.info("Guild ID: " + interaction.guildId);
 
-  return interaction.reply(`You have been added to the "${roleName}" role.`);
+    const guild = requireGuild(interaction);
+    const member = requireMember(interaction, guild);
+    const game = requireStringParameter(
+      interaction,
+      "game",
+      "You must provide a game name."
+    );
+
+    console.info("All prerequisites checks have passed");
+
+    const roleName = `${game} players`;
+    const role = guild.roles.cache.find(
+      (role) => role.name.toLowerCase() === roleName.toLowerCase()
+    );
+
+    if (!role) {
+      return interaction.reply(`The role "${roleName}" does not exist.`);
+    }
+
+    if (member.roles.cache.has(role.id)) {
+      return interaction.reply(`You already have the "${roleName}" role.`);
+    }
+
+    try {
+      await member.roles.add(role);
+      console.info(`Added role "${roleName}" to user ${member.user.tag}`);
+    } catch (error) {
+      console.error("Error adding role:", error);
+      return interaction.reply("There was an error adding the role.");
+    }
+
+    return interaction.reply(`You have been added to the "${roleName}" role.`);
+  } catch (error: any) {
+    console.error("Error in addgame command:", error);
+    return interaction.reply(error.message || "An error occurred.");
+  }
 }

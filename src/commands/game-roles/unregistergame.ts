@@ -1,4 +1,9 @@
 import { CommandInteraction, SlashCommandBuilder, Guild } from "discord.js";
+import {
+  requireGuild,
+  requireMember,
+  requireStringParameter,
+} from "../../helpers/command-validators";
 
 export const data = new SlashCommandBuilder()
   .setName("unregistergame")
@@ -53,26 +58,13 @@ export async function execute(interaction: CommandInteraction) {
   console.info("User ID: " + interaction.user.id);
   console.info("Guild ID: " + interaction.guildId);
 
-  const userId: string = interaction.user.id;
-  const guild: Guild | null = interaction.guild;
-
-  if (!guild) {
-    return interaction.reply("You must be in a server to use this command.");
-  }
-
-  const member = guild.members.cache.get(userId);
-  if (!member) {
-    return interaction.reply("You must be in a server to use this command.");
-  }
-
-  if (!member.permissions.has("Administrator")) {
-    return interaction.reply("You must be an admin to use this command.");
-  }
-
-  const game = interaction.options.get("name")?.value as string;
-  if (!game) {
-    return interaction.reply("You must provide a game name.");
-  }
+  const guild = requireGuild(interaction);
+  requireMember(interaction, guild, "Administrator");
+  const game = requireStringParameter(
+    interaction,
+    "game",
+    "You must provide a game name."
+  );
 
   console.info("All prerequisites checks have passed");
 
