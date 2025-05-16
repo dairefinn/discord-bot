@@ -72,7 +72,7 @@ export async function execute(interaction: CommandInteraction<CacheType>) {
   const member = requireMember(interaction, guild);
   const game = requireStringParameter(
     interaction,
-    "game",
+    "name",
     "You must provide a game name."
   );
 
