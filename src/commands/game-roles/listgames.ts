@@ -1,4 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder, Guild } from "discord.js";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 export const data = new SlashCommandBuilder()
   .setName("listgames")
@@ -13,12 +14,18 @@ export async function execute(interaction: CommandInteraction) {
   const guild: Guild | null = interaction.guild;
 
   if (!guild) {
-    return interaction.reply("You must be in a server to use this command.");
+    return replyEphemeral(
+      interaction,
+      "You must be in a server to use this command."
+    );
   }
 
   const member = guild.members.cache.get(userId);
   if (!member) {
-    return interaction.reply("You must be in a server to use this command.");
+    return replyEphemeral(
+      interaction,
+      "You must be in a server to use this command."
+    );
   }
 
   console.info("All prerequisites checks have passed");
@@ -27,5 +34,5 @@ export async function execute(interaction: CommandInteraction) {
   console.info("Data: ", interaction.options.data);
 
   // TODO: If role with the given name already exists, return an error message
-  return interaction.reply("Placeholder response");
+  return replyEphemeral(interaction, "Placeholder response");
 }

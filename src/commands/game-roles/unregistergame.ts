@@ -4,6 +4,7 @@ import {
   requireMember,
   requireStringParameter,
 } from "../../helpers/command-validators";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 export const data = new SlashCommandBuilder()
   .setName("unregistergame")
@@ -79,7 +80,10 @@ export async function execute(interaction: CommandInteraction) {
   );
 
   if (!role) {
-    return interaction.reply(`The role "${roleName}" does not exist.`);
+    return replyEphemeral(
+      interaction,
+      `The role "${roleName}" does not exist.`
+    );
   }
 
   // Delete the role
@@ -88,8 +92,11 @@ export async function execute(interaction: CommandInteraction) {
     console.info(`Role deleted: ${role.name}`);
   } catch (error) {
     console.error("Error deleting role:", error);
-    return interaction.reply("There was an error deleting the role.");
+    return replyEphemeral(interaction, "There was an error deleting the role.");
   }
 
-  return interaction.reply(`Deleted role "${roleName}" for game "${game}".`);
+  return replyEphemeral(
+    interaction,
+    `Deleted role "${roleName}" for game "${game}".`
+  );
 }

@@ -9,6 +9,7 @@ import {
   requireMember,
   requireStringParameter,
 } from "../../helpers/command-validators";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 export const data = new SlashCommandBuilder()
   .setName("removegame")
@@ -83,7 +84,10 @@ export async function execute(interaction: CommandInteraction<CacheType>) {
   );
 
   if (!role) {
-    return interaction.reply(`You do not have the "${roleName}" role.`);
+    return replyEphemeral(
+      interaction,
+      `You do not have the "${roleName}" role.`
+    );
   }
 
   try {
@@ -91,10 +95,11 @@ export async function execute(interaction: CommandInteraction<CacheType>) {
     console.info(`Removed role "${roleName}" from user ${member.user.tag}`);
   } catch (error) {
     console.error("Error removing role:", error);
-    return interaction.reply("There was an error removing the role.");
+    return replyEphemeral(interaction, "There was an error removing the role.");
   }
 
-  return interaction.reply(
+  return replyEphemeral(
+    interaction,
     `You have been removed from the "${roleName}" role.`
   );
 }

@@ -1,4 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 /**
  * This command replies with "Pong!" when called.
@@ -20,8 +21,8 @@ export async function execute(interaction: CommandInteraction) {
   );
   const contents = interaction.options.get("contents")?.value as string;
   if (contents) {
-    return interaction.reply(`Contents: ${contents}`);
+    return replyEphemeral(interaction, `Contents: ${contents}`);
   }
 
-  return interaction.reply(`${output}`);
+  return replyEphemeral(interaction, `${output}`);
 }

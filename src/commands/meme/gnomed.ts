@@ -8,6 +8,7 @@ import {
   joinVoiceChannel,
 } from "@discordjs/voice";
 import { join } from "node:path";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 /**
  * This command joins the current user's channel and plays the gnomed sound effect, then leaves.
@@ -26,23 +27,30 @@ export async function execute(interaction: CommandInteraction) {
   const guild: Guild | null = interaction.guild;
 
   if (!guild) {
-    return interaction.reply("You must be in a server to use this command.");
+    return replyEphemeral(
+      interaction,
+      "You must be in a server to use this command."
+    );
   }
 
   const member = guild.members.cache.get(userId);
   if (!member) {
-    return interaction.reply("You must be in a server to use this command.");
+    return replyEphemeral(
+      interaction,
+      "You must be in a server to use this command."
+    );
   }
 
   // Find out if the user is in a voice channel or not
   if (!member.voice.channel) {
-    return interaction.reply(
+    return replyEphemeral(
+      interaction,
       "You must be in a voice channel to use this command."
     );
   }
 
   if (!member.voice.channel.joinable || !member.voice.channel.isVoiceBased()) {
-    return interaction.reply("I cannot join your voice channel.");
+    return replyEphemeral(interaction, "I cannot join your voice channel.");
   }
 
   console.info("All prerequisites checks have passed");
@@ -77,13 +85,13 @@ export async function execute(interaction: CommandInteraction) {
   audioPlayer.on("error", (error) => {
     console.error("Error playing audio:", error.message);
     connection.destroy();
-    return interaction.reply("There was an error gnoming you.");
+    return replyEphemeral(interaction, "There was an error gnoming you.");
   });
 
   audioPlayer.on(AudioPlayerStatus.Idle, () => {
     console.info("Audio player is idle");
     connection.destroy();
-    return interaction.reply("You've been gnomed.");
+    return replyEphemeral(interaction, "You've been gnomed.");
   });
 
   audioPlayer.on(AudioPlayerStatus.Playing, () => {

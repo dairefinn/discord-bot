@@ -2,6 +2,7 @@ import { Client, Collection, Events } from "discord.js";
 import { deployCommands } from "./deploy-commands";
 import { commands, BotCommand } from "./commands";
 import { config } from "./config";
+import { replyEphemeral } from "./helpers/response-utils";
 
 /**
  * This is the main entry point for the bot.
@@ -27,9 +28,16 @@ client.on(Events.GuildCreate, async (guild) => {
 client.on(Events.InteractionCreate, async (interaction) => {
   // Handle slash commands
   if (interaction.isCommand()) {
-    const { commandName } = interaction;
-    if (commands[commandName as keyof typeof commands]) {
-      await commands[commandName as keyof typeof commands].execute(interaction);
+    try {
+      const { commandName } = interaction;
+      if (commands[commandName as keyof typeof commands]) {
+        await commands[commandName as keyof typeof commands].execute(
+          interaction
+        );
+      }
+    } catch (error: any) {
+      console.error("Error in addgame command:", error);
+      await replyEphemeral(interaction, error.message || "An error occurred.");
     }
     return;
   }

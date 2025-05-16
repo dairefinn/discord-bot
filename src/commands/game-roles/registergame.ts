@@ -4,6 +4,7 @@ import {
   requireMember,
   requireStringParameter,
 } from "../../helpers/command-validators";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 export const data = new SlashCommandBuilder()
   .setName("registergame")
@@ -41,7 +42,10 @@ export async function execute(interaction: CommandInteraction) {
     (role) => role.name.toLowerCase() === roleNameLower
   );
   if (alreadyExists) {
-    return interaction.reply(`The role "${roleName}" already exists.`);
+    return replyEphemeral(
+      interaction,
+      `The role "${roleName}" already exists.`
+    );
   }
 
   // Create the role
@@ -56,8 +60,11 @@ export async function execute(interaction: CommandInteraction) {
     console.info(`Role created: ${role.name}`);
   } catch (error) {
     console.error("Error creating role:", error);
-    return interaction.reply("There was an error creating the role.");
+    return replyEphemeral(interaction, "There was an error creating the role.");
   }
 
-  return interaction.reply(`Created role "${roleName}" for game "${game}".`);
+  return replyEphemeral(
+    interaction,
+    `Created role "${roleName}" for game "${game}".`
+  );
 }

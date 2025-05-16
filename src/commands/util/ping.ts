@@ -1,4 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder } from "discord.js";
+import { replyEphemeral } from "../../helpers/response-utils";
 
 /**
  * This command replies with "Pong!" when called.
@@ -9,5 +10,5 @@ export const data = new SlashCommandBuilder()
   .setDescription("Replies with Pong!");
 
 export async function execute(interaction: CommandInteraction) {
-  return interaction.reply("Pong!");
+  return replyEphemeral(interaction, "Pong!");
 }
