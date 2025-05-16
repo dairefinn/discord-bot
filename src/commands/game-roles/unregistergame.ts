@@ -8,7 +8,45 @@ export const data = new SlashCommandBuilder()
       .setName("name")
       .setDescription("Name of the game to unregister")
       .setRequired(true)
+      .setAutocomplete(true)
   );
+
+// Autocomplete handler for suggesting roles ending with "players"
+export async function autocomplete(interaction: any) {
+  try {
+    const focusedOption = interaction.options.getFocused(true);
+    const guild: Guild | null = interaction.guild;
+
+    if (focusedOption.name === "name") {
+      if (!guild) return interaction.respond([]);
+
+      let roleOptions = guild.roles.cache.filter((role) =>
+        role.name.toLowerCase().endsWith(" players")
+      );
+
+      if (focusedOption.value) {
+        roleOptions = roleOptions.filter((role) =>
+          role.name.toLowerCase().includes(focusedOption.value.toLowerCase())
+        );
+      }
+
+      return interaction.respond(
+        roleOptions.map((r) => {
+          const nameWithoutAppendix = r.name.replace(/ players$/i, "");
+          return {
+            name: nameWithoutAppendix,
+            value: nameWithoutAppendix,
+          };
+        })
+      );
+    }
+
+    return interaction.respond([]);
+  } catch (error) {
+    console.error("Error in autocomplete:", error);
+    await interaction.respond([]);
+  }
+}
 
 export async function execute(interaction: CommandInteraction) {
   console.info("Running the unregistergame command");
