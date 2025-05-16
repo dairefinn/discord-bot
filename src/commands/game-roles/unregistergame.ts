@@ -27,6 +27,10 @@ export async function execute(interaction: CommandInteraction) {
     return interaction.reply("You must be in a server to use this command.");
   }
 
+  if (!member.permissions.has("Administrator")) {
+    return interaction.reply("You must be an admin to use this command.");
+  }
+
   const game = interaction.options.get("name")?.value as string;
   if (!game) {
     return interaction.reply("You must provide a game name.");
