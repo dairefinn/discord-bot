@@ -1,6 +1,6 @@
 import { Client, Collection, Events } from "discord.js";
 import { deployCommands } from "./deploy-commands";
-import { commands } from "./commands";
+import { commands, BotCommand } from "./commands";
 import { config } from "./config";
 
 /**
@@ -25,12 +25,27 @@ client.on(Events.GuildCreate, async (guild) => {
 
 // When a user interacts with the bot, execute the command
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isCommand()) {
+  // Handle slash commands
+  if (interaction.isCommand()) {
+    const { commandName } = interaction;
+    if (commands[commandName as keyof typeof commands]) {
+      await commands[commandName as keyof typeof commands].execute(interaction);
+    }
     return;
   }
-  const { commandName } = interaction;
-  if (commands[commandName as keyof typeof commands]) {
-    commands[commandName as keyof typeof commands].execute(interaction);
+
+  // Handle autocomplete interactions
+  if (interaction.isAutocomplete()) {
+    const { commandName } = interaction;
+    if (commands[commandName as keyof typeof commands]) {
+      const command = commands[
+        commandName as keyof typeof commands
+      ] as BotCommand;
+      if (command.autocomplete) {
+        await command.autocomplete?.(interaction);
+      }
+    }
+    return;
   }
 });
 
