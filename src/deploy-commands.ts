@@ -1,4 +1,3 @@
-import { REST, Routes } from "discord.js";
 import { config } from "./config";
 import { commands } from "./commands";
 
@@ -9,8 +8,6 @@ import { commands } from "./commands";
 
 const commandsData = Object.values(commands).map((command) => command.data);
 
-const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);
-
 type DeployCommandsProps = {
   guildId: string;
 };
@@ -19,12 +16,21 @@ export async function deployCommands({ guildId }: DeployCommandsProps) {
   try {
     console.log("Started refreshing application (/) commands.");
 
-    await rest.put(
-      Routes.applicationGuildCommands(config.DISCORD_CLIENT_ID, guildId),
+    const response = await fetch(
+      `https://discord.com/api/v10/applications/${config.DISCORD_APPLICATION_ID}/guilds/${guildId}/commands`,
       {
-        body: commandsData,
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bot ${config.DISCORD_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(commandsData)
       }
     );
+
+    if (!response.ok) {
+      throw new Error(`Failed to deploy commands: ${response.statusText}`);
+    }
 
     console.log("Successfully reloaded application (/) commands.");
   } catch (error) {

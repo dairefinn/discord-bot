@@ -1,21 +1,17 @@
-import dotenv from "dotenv";
-
 /**
- * This file will load the environment variables from the .env file.
- * It will then store them in a config object for easy access.
+ * This file provides type-safe access to environment variables.
+ * The actual values are provided by Cloudflare Workers through the env parameter.
  */
 
-dotenv.config();
-
-const { DISCORD_TOKEN, DISCORD_CLIENT_ID } = process.env;
-
-// Throw error if missing environment variables
-if (!DISCORD_TOKEN || !DISCORD_CLIENT_ID) {
-  throw new Error("Missing environment variables");
+export interface Env {
+  DISCORD_TOKEN: string;
+  DISCORD_PUBLIC_KEY: string;
+  DISCORD_APPLICATION_ID: string;
 }
 
-// Store environment variables in config object to make them more easily accessible
+// This is just a type reference - the actual values come from the env parameter
 export const config = {
-  DISCORD_TOKEN,
-  DISCORD_CLIENT_ID,
-};
+  DISCORD_TOKEN: '',
+  DISCORD_PUBLIC_KEY: '',
+  DISCORD_APPLICATION_ID: '',
+} as const;
