@@ -18,5 +18,8 @@ DISCORD_PUBLIC_KEY = "your-public-key-here"
 # Your Discord application's ID
 DISCORD_APPLICATION_ID = "your-application-id-here"
 
+# Enables/disables the /register-command POST endpoint
+ALLOW_REGISTER_COMMANDS= false
+
 # For sensitive values like DISCORD_TOKEN, use:
 # wrangler secret put DISCORD_TOKEN 
