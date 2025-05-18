@@ -11,10 +11,6 @@ import * as registergame from "./game-roles/registergame";
 import * as unregistergame from "./game-roles/unregistergame";
 
 import * as echo from "./util/echo";
-import * as registercommands from "./util/registercommands";
-import * as registercommand from "./util/registercommand";
-import * as deletecommands from "./util/deletecommands";
-import * as listcommands from "./util/listcommands";
 
 export interface Command {
 	data: DiscordCommandData;
@@ -33,10 +29,6 @@ export interface Command {
  * When a new command is created, it should be added here in order to be usable.
  */
 export const commands: { [key: string]: Command } = {
-	registercommand,
-	deletecommands,
-	registercommands,
-	listcommands,
 	addgame,
 	removegame,
 	registergame,

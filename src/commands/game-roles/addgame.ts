@@ -31,8 +31,6 @@ export const data: DiscordCommandData = {
 	],
 };
 
-// Autocomplete handler for suggesting roles ending with "players"
-// TODO: Make this list roles on the current member which end with "players" instead
 export async function autocomplete(
 	interaction: DiscordInteraction,
 	env: Env
@@ -42,9 +40,16 @@ export async function autocomplete(
 
 	if (focusedOption?.name === "name") {
 		const roles: DiscordRole[] = await fetchRoles(interaction, env);
+		const member: DiscordMember = await fetchMember(
+			env,
+			interaction.guild_id,
+			interaction.member.user.id
+		);
 
-		let roleOptions = roles.filter((role) =>
-			role.name.toLowerCase().endsWith(" players")
+		let roleOptions = roles.filter(
+			(role) =>
+				role.name.toLowerCase().endsWith(" players") &&
+				!member.roles.includes(role.id)
 		);
 
 		if (focusedValue && typeof focusedValue === "string") {

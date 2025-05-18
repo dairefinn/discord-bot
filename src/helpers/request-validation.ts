@@ -27,3 +27,5 @@ export async function validateRequest(
 
 	return true;
 }
+
+export default validateRequest;
