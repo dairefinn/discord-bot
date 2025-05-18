@@ -1,41 +1,29 @@
-# ʕ •́؈•̀) `worker-typescript-template`
+# Overview
 
-## ⚠️ Warning: This template is no longer maintained
+This is a bot for the Discord app which I am creating because I am bored waiting for the game "The Lord of the Rings: Return to Moria" to install :)
 
-Create TypeScript workers in the [command-line with Wrangler 2.0.0+](https://developers.cloudflare.com/workers/wrangler/get-started/) using `wrangler init` instead.
+I've recently started developing it again because I want to manage roles on my server. We have a role for every game we play and if we want to play it, we'll usually @ the role in the chat. I want this bot to allow people to register their own games so I don't have to do it manually. I also want people to be able to join and leave these roles automatically so that I also don't have to do it manually.
 
----
+# Features
 
-A batteries included, with the latest Wrangler, template for kick starting a TypeScript Cloudflare worker project.
+## Game role management
 
-## Note: You must use [wrangler](https://developers.cloudflare.com/workers/cli-wrangler/install-update) 1.17 or newer to use this template.
+I'm using this bot to manage roles on my server. Admins can register and unregister games that players are playing in their server. Players than then opt in to roles related to these games. This allows players to mention the role in the chat to try and get others to play with them.
 
-## 🔋 Getting Started
+**Commands:**
 
-This template is meant to be used with [Wrangler](https://github.com/cloudflare/wrangler). If you are not already familiar with the tool, we recommend that you install the tool and configure it to work with your [Cloudflare account](https://dash.cloudflare.com). Documentation can be found [here](https://developers.cloudflare.com/workers/tooling/wrangler/).
+- `/addgame <GAME_NAME>` - Adds you to the role of the provided game if it exists.
+- `/removegame <GAME_NAME>` - Removes you from the role of the provided game if it exists.
+- `/registergame <GAME_NAME>` - Registers a game with the bot. This will create a new role with the name of the game.
+- `/unregistergame <GAME_NAME>` - Unregisters a game with the bot. This will delete the role with the name of the game.
 
-To generate using Wrangler, run this command:
+## Other commands
 
-```bash
-wrangler generate my-ts-project https://github.com/cloudflare/worker-typescript-template
-```
+- `/ping` - A simple ping command to check if the bot is online. Responds with "Pong!" if the bot is online.
+- `/echo` - A simple echo command to check if the bot is online. Responds with the same message that was sent to the bot.
+- `/gnomed` - Joins the voice channel of the user who sent the command, plays a gnome ooh sound effect and then leaves the voice channel.
 
-### 👩 💻 Developing
+# Environment variables
 
-[`src/index.ts`](./src/index.ts) calls the request handler in [`src/handler.ts`](./src/handler.ts), and will return the [request method](https://developer.mozilla.org/en-US/docs/Web/API/Request/method) for the given request.
-
-### 🧪 Testing
-
-This template comes with jest tests utilizing [Miniflare](https://github.com/cloudflare/miniflare) which simply test that the request handler can handle each request method. `npm test` will run your tests.
-
-### ✏️ Formatting
-
-This template uses [`prettier`](https://prettier.io/) to format the project. To invoke, run `npm run format`.
-
-### 👀 Previewing and Publishing
-
-For information on how to preview and publish your worker, please see the [Wrangler docs](https://developers.cloudflare.com/workers/tooling/wrangler/commands/#publish).
-
-## 🤢 Issues
-
-If you run into issues with this specific project, please feel free to file an issue [here](https://github.com/cloudflare/worker-typescript-template/issues). If the problem is with Wrangler, please file an issue [here](https://github.com/cloudflare/wrangler/issues).
+- DISCORD_TOKEN - The token used to authenticate with the Discord API
+- DISCORD_CLIENT_ID - The client ID used to identify the user authenticating with the Discord API
