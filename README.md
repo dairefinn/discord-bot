@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> While this version of the bot still works, it is no longer in active developemnt. See the `main` branch for the latest changes.
+
 # Overview
 
 This is a bot for the Discord app which I am creating because I am bored waiting for the game "The Lord of the Rings: Return to Moria" to install :)
