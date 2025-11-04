@@ -1,5 +1,5 @@
 > [!IMPORTANT]  
-> While this version of the bot still works, it is no longer in active developemnt. See the `main` branch for the latest changes.
+> While this version of the bot still works, it is no longer in active development. See the `main` branch for the latest changes.
 
 # Overview
 
