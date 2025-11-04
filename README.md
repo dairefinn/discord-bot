@@ -4,7 +4,7 @@ This is a bot for the Discord app which I am creating because I am bored waiting
 
 I've recently started developing it again because I want to manage roles on my server. We have a role for every game we play and if we want to play it, we'll usually mention the role in the chat using @.
 
-This bot allows me to create new roles eg "Arc raiders players" using `/registergame Arc raiders` and then anyone interested in playing can use the `/addgame` command to add themselves to the new roles or use the `/removegame` command to remove themselves from it if they no longer want to play. The bot also allows me to unregister games using `/unregistergame <GAME_NAME>` and this will delete the role with the name of the game.
+This bot allows me to create new roles for any games we are playing. For Example I could use `/registergame Arc raiders` to create the "Arc raiders players" role. Anyone interested in playing can use the `/addgame` command to add themselves to the new role and when someone types `@Arc Raiders Players` in a channel they will be notified. When a person decides they no longer want to play a game they can use `/removegame` to remove themselves from the role. If nobody is playing a game anymore and I don't see us playing again in the future I can use `/unregistergame <GAME_NAME>` to delete the role.
 
 `/addgame`, `/removegame` and `/unregistergame` all have autocomplete suggestions which query the existing roles and suggest them to the user. The bot knows which roles to suggest because all the game roles end with " players" - this is just a convention I've chosen to make it easier to identify the game roles without having to use any sort of database.
 
