@@ -1,110 +1,125 @@
 import {
-  CommandInteraction,
-  SlashCommandBuilder,
-  Guild,
-  CacheType,
-  MessageFlags,
-} from "discord.js";
+	InteractionResponseFlags,
+	InteractionResponseType,
+} from "discord-interactions";
+import { Env } from "../..";
 import {
-  requireGuild,
-  requireMember,
-  requireStringParameter,
-} from "../../helpers/command-validators";
-import { replyEphemeral } from "../../helpers/response-utils";
+	DiscordCommandData,
+	DiscordCommandOptionType,
+	DiscordCommandType,
+	DiscordInteraction,
+	DiscordInteractionResponse,
+	DiscordMember,
+} from "../../types/discord";
+import { DiscordRole, fetchRoles } from "../../api/roles";
+import { requireStringOption } from "../../helpers/command-validators";
+import { addMemberRole, fetchMember } from "../../api/members";
+import { MessageResponseError } from "../../types/errors";
 
-export const data = new SlashCommandBuilder()
-  .setName("addgame")
-  .setDescription("Add yourself to a role associated with a game")
-  .addStringOption((option) =>
-    option
-      .setName("name")
-      .setDescription("Name of the game to join")
-      .setRequired(true)
-      .setAutocomplete(true)
-  );
+export const data: DiscordCommandData = {
+	name: "addgame",
+	description: "Add a game role to yourself",
+	type: DiscordCommandType.CHAT_INPUT,
+	options: [
+		{
+			name: "name",
+			description: "Name of the game to add",
+			type: DiscordCommandOptionType.STRING,
+			required: true,
+			autocomplete: true,
+		},
+	],
+};
 
-// Autocomplete handler for suggesting game roles
-export async function autocomplete(interaction: any) {
-  try {
-    const focusedOption = interaction.options.getFocused(true);
+export async function autocomplete(
+	interaction: DiscordInteraction,
+	env: Env
+): Promise<DiscordInteractionResponse> {
+	const focusedOption = interaction.data?.options?.find((opt) => opt.focused);
+	const focusedValue = focusedOption?.value || "";
 
-    const guild: Guild | null = interaction.guild;
+	if (focusedOption?.name === "name") {
+		const roles: DiscordRole[] = await fetchRoles(interaction, env);
+		const member: DiscordMember = await fetchMember(
+			env,
+			interaction.guild_id,
+			interaction.member.user.id
+		);
 
-    if (focusedOption.name === "name") {
-      if (!guild) return interaction.respond([]);
+		let roleOptions = roles.filter(
+			(role) =>
+				role.name.toLowerCase().endsWith(" players") &&
+				!member.roles.includes(role.id)
+		);
 
-      let roleOptions = guild.roles.cache.filter((role) =>
-        role.name.toLowerCase().endsWith(" players")
-      );
+		if (focusedValue && typeof focusedValue === "string") {
+			roleOptions = roleOptions.filter((role) =>
+				role.name.toLowerCase().includes(focusedValue.toLowerCase())
+			);
+		}
 
-      if (focusedOption.value) {
-        roleOptions = roleOptions.filter((role) =>
-          role.name.toLowerCase().includes(focusedOption.value.toLowerCase())
-        );
-      }
+		const choices = roleOptions.map((r) => ({
+			name: r.name.replace(/ players$/i, ""),
+			value: r.name.replace(/ players$/i, ""),
+		}));
 
-      return interaction.respond(
-        roleOptions.map((r) => {
-          const nameWithoutAppendix = r.name.replace(" players", "");
-          return {
-            name: nameWithoutAppendix,
-            value: nameWithoutAppendix,
-          };
-        })
-      );
-    }
+		return {
+			type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+			data: {
+				choices,
+			},
+		};
+	}
 
-    return interaction.respond([]);
-  } catch (error) {
-    console.error("Error in autocomplete:", error);
-    await interaction.respond([]);
-  }
+	return {
+		type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+		data: {
+			choices: [],
+		},
+	};
 }
 
-export async function execute(interaction: CommandInteraction<CacheType>) {
-  console.info("Running the addgame command");
-  console.info("User ID: " + interaction.user.id);
-  console.info("Guild ID: " + interaction.guildId);
+export async function execute(
+	interaction: DiscordInteraction,
+	env: Env
+): Promise<DiscordInteractionResponse> {
+	const member: DiscordMember = await fetchMember(
+		env,
+		interaction.guild_id,
+		interaction.member.user.id
+	);
+	const name: string = await requireStringOption(
+		interaction,
+		"name",
+		"Game name is required."
+	);
+	const roles: DiscordRole[] = await fetchRoles(interaction, env);
 
-  const guild = requireGuild(interaction);
-  const member = requireMember(interaction, guild);
-  const game = requireStringParameter(
-    interaction,
-    "name",
-    "You must provide a game name."
-  );
+	const roleName = `${name} players`;
+	const existingRole = roles.find(
+		(role) => role.name.toLowerCase() === roleName.toLowerCase()
+	);
 
-  console.info("All prerequisites checks have passed");
+	if (!existingRole) {
+		throw new MessageResponseError(`The role "${roleName}" does not exist.`);
+	}
 
-  const roleName = `${game} players`;
-  const role = guild.roles.cache.find(
-    (role) => role.name.toLowerCase() === roleName.toLowerCase()
-  );
+	if (member.roles.includes(existingRole.id)) {
+		throw new MessageResponseError(`You already have the role "${roleName}".`);
+	}
 
-  if (!role) {
-    return replyEphemeral(
-      interaction,
-      `The role "${roleName}" does not exist.`
-    );
-  }
+	await addMemberRole(
+		env,
+		interaction.guild_id,
+		interaction.member.user.id,
+		existingRole.id
+	);
 
-  if (member.roles.cache.has(role.id)) {
-    return replyEphemeral(
-      interaction,
-      `You already have the "${roleName}" role.`
-    );
-  }
-
-  try {
-    await member.roles.add(role);
-    console.info(`Added role "${roleName}" to user ${member.user.tag}`);
-  } catch (error) {
-    console.error("Error adding role:", error);
-    return replyEphemeral(interaction, "There was an error adding the role.");
-  }
-
-  return replyEphemeral(
-    interaction,
-    `You have been added to the "${roleName}" role.`
-  );
+	return {
+		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+		data: {
+			content: `You've been added to the "${roleName}" role.`,
+			flags: InteractionResponseFlags.EPHEMERAL,
+		},
+	};
 }

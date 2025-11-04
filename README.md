@@ -23,24 +23,6 @@ I'm using this bot to manage roles on my server. Admins can register and unregis
 - `/echo` - A simple echo command to check if the bot is online. Responds with the same message that was sent to the bot.
 - `/gnomed` - Joins the voice channel of the user who sent the command, plays a gnome ooh sound effect and then leaves the voice channel.
 
-# Getting started
-
-## Setup
-
-1. Clone the repository
-2. Run `npm install`/`yarn install` to install the dependencies
-3. Create a copy of the `.env.example` file and rename it to `.env`
-4. Create a Discord application at https://discord.com/developers/
-5. Fill in the `.env` file with the required information
-
-## Running
-
-**Production:**
-Run `npm run build`/`yarn build` to build the project. Run `npm start`/`yarn start` afterwards to start the bot
-
-**Development:**
-Run `npm run dev`/`yarn dev` to start the bot in development mode. This will watch for changes in the code and automatically restart the bot when changes are made.
-
 # Environment variables
 
 - DISCORD_TOKEN - The token used to authenticate with the Discord API

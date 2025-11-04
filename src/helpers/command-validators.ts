@@ -1,72 +1,55 @@
 import {
-  Guild,
-  GuildMember,
-  CommandInteraction,
-  CacheType,
-  PermissionResolvable,
-} from "discord.js";
+	DiscordGuild,
+	DiscordInteraction,
+	DiscordMember,
+} from "../types/discord";
+import { DiscordRole } from "../api/roles";
+import { MessageResponseError } from "../types/errors";
 
-/**
- * Ensures the interaction is in a guild and returns the guild.
- */
-export function requireGuild(
-  interaction: CommandInteraction<CacheType>
-): Guild {
-  const guild = interaction.guild;
-  if (!guild) {
-    throw new Error("You must be in a server to use this command.");
-  }
+export async function requireStringOption(
+	interaction: DiscordInteraction,
+	optionName: string,
+	errorMessage: string
+): Promise<string> {
+	if (!interaction.data) {
+		throw new MessageResponseError("No data found in interaction.");
+	}
 
-  return guild;
+	if (!interaction.data.options || interaction.data.options.length === 0) {
+		throw new MessageResponseError("No options found in interaction data.");
+	}
+
+	const optionValue = interaction.data.options.find(
+		(option) => option.name === optionName
+	)?.value;
+
+	if (!optionValue || typeof optionValue !== "string") {
+		throw new MessageResponseError(errorMessage);
+	}
+
+	return optionValue;
 }
 
-/**
- * Ensures the member has admin permissions.
- */
-export function requireRole(
-  member: GuildMember,
-  roleName: PermissionResolvable
-): boolean {
-  const isAdmin: boolean = member.permissions.has(roleName);
-  if (!isAdmin) {
-    throw new Error("You must be an admin to use this command.");
-  }
+export async function requireAdmin(
+	roles: DiscordRole[],
+	member: DiscordMember,
+	guild: DiscordGuild
+): Promise<boolean> {
+	const userId = member.user?.id;
+	const isOwner = guild.owner_id === userId;
+	// Check if user has admin role or is owner
+	const hasAdmin =
+		isOwner ||
+		member.roles.some((roleId) => {
+			const role = roles.find((r) => r.id === roleId);
+			return role && (Number(role.permissions) & 0x8) === 0x8; // Check for ADMINISTRATOR permission flag
+		});
 
-  return isAdmin;
-}
+	if (!hasAdmin) {
+		throw new Error(
+			"You must be an administrator or server owner to use this command."
+		);
+	}
 
-/**
- * Ensures the user is a member of the guild and returns the member.
- */
-export function requireMember(
-  interaction: CommandInteraction<CacheType>,
-  guild: Guild,
-  requiredRole?: PermissionResolvable
-): GuildMember {
-  const member = guild.members.cache.get(interaction.user.id);
-  if (!member) {
-    throw new Error("You must be in a server to use this command.");
-  }
-
-  if (requiredRole) {
-    requireRole(member, requiredRole);
-  }
-
-  return member;
-}
-
-/**
- * Ensures the parameter is provided in the interaction.
- */
-export function requireStringParameter(
-  interaction: CommandInteraction<CacheType>,
-  parameter: string,
-  errorMessage: string
-): string {
-  const game = interaction.options.get(parameter)?.value as string;
-  if (!game) {
-    throw new Error(errorMessage);
-  }
-
-  return game;
+	return hasAdmin;
 }

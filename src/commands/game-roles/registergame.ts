@@ -1,70 +1,79 @@
-import { CommandInteraction, SlashCommandBuilder, Guild } from "discord.js";
 import {
-  requireGuild,
-  requireMember,
-  requireStringParameter,
+	InteractionResponseFlags,
+	InteractionResponseType,
+} from "discord-interactions";
+import { Env } from "../..";
+import { DiscordRole, fetchRoles, createRole } from "../../api/roles";
+import {
+	requireStringOption,
+	requireAdmin,
 } from "../../helpers/command-validators";
-import { replyEphemeral } from "../../helpers/response-utils";
+import {
+	DiscordCommandData,
+	DiscordInteraction,
+	DiscordInteractionResponse,
+	DiscordGuild,
+	DiscordCommandType,
+	DiscordCommandOptionType,
+} from "../../types/discord";
+import { fetchGuild } from "../../api/guilds";
+import { fetchMember } from "../../api/members";
 
-export const data = new SlashCommandBuilder()
-  .setName("registergame")
-  .setDescription("Register a game and create a role for it")
-  .addStringOption((option) =>
-    option
-      .setName("name")
-      .setDescription("Name of the game to register")
-      .setRequired(true)
-  );
+export const data: DiscordCommandData = {
+	name: "registergame",
+	description: "Register a new game role",
+	type: DiscordCommandType.CHAT_INPUT,
+	options: [
+		{
+			name: "name",
+			description: "Name of the game to register",
+			type: DiscordCommandOptionType.STRING,
+			required: true,
+		},
+	],
+	default_member_permissions: "10000000",
+};
 
-export async function execute(interaction: CommandInteraction) {
-  console.info("Running the registergame command");
-  console.info("User ID: " + interaction.guildId);
-  console.info("Guild ID: " + interaction.guildId);
+export async function execute(
+	interaction: DiscordInteraction,
+	env: Env
+): Promise<DiscordInteractionResponse> {
+	const guild: DiscordGuild = await fetchGuild(env, interaction.guild_id);
+	const member = await fetchMember(
+		env,
+		interaction.guild_id,
+		interaction.member.user.id
+	);
+	const name: string = await requireStringOption(
+		interaction,
+		"name",
+		"Game name is required."
+	);
+	const roles: DiscordRole[] = await fetchRoles(interaction, env);
+	requireAdmin(roles, member, guild);
 
-  const guild = requireGuild(interaction);
-  requireMember(interaction, guild, "Administrator");
-  const game = requireStringParameter(
-    interaction,
-    "game",
-    "You must provide a game name."
-  );
+	const roleName = `${name} players`;
+	const existingRole = roles.find(
+		(role) => role.name.toLowerCase() === roleName.toLowerCase()
+	);
 
-  console.info("All prerequisites checks have passed");
+	if (existingRole) {
+		return {
+			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+			data: {
+				content: `A role for "${name}" already exists.`,
+				flags: InteractionResponseFlags.EPHEMERAL,
+			},
+		};
+	}
 
-  const roleName = `${game} players`;
+	await createRole(interaction, env, roleName);
 
-  // Get all roles in the guild
-  const roles = guild.roles.cache;
-
-  // Check if the role already exists
-  const roleNameLower = roleName.toLowerCase();
-  const alreadyExists = roles.some(
-    (role) => role.name.toLowerCase() === roleNameLower
-  );
-  if (alreadyExists) {
-    return replyEphemeral(
-      interaction,
-      `The role "${roleName}" already exists.`
-    );
-  }
-
-  // Create the role
-  try {
-    const role = await guild.roles.create({
-      name: roleName,
-      color: "#000000",
-      reason: `Role created for game: ${game}`,
-      mentionable: true,
-      permissions: [],
-    });
-    console.info(`Role created: ${role.name}`);
-  } catch (error) {
-    console.error("Error creating role:", error);
-    return replyEphemeral(interaction, "There was an error creating the role.");
-  }
-
-  return replyEphemeral(
-    interaction,
-    `Created role "${roleName}" for game "${game}".`
-  );
+	return {
+		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+		data: {
+			content: `Added "${roleName}" role.`,
+			flags: InteractionResponseFlags.EPHEMERAL,
+		},
+	};
 }

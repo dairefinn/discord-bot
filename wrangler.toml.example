@@ -1,0 +1,25 @@
+# Name of your worker
+name = "discord-bot"
+
+# Entry point of your application
+main = "src/index.ts"
+
+# Ensures consistent behavior across deployments
+compatibility_date = "2024-01-01"
+
+# Development environment variables
+[vars]
+# These are non-sensitive variables that can be committed to git
+# Sensitive variables (like DISCORD_TOKEN) should be set using `wrangler secret put`
+
+# Your Discord application's public key
+DISCORD_PUBLIC_KEY = "your-public-key-here"
+
+# Your Discord application's ID
+DISCORD_APPLICATION_ID = "your-application-id-here"
+
+# Enables/disables the /register-command POST endpoint
+ALLOW_REGISTER_COMMANDS= false
+
+# For sensitive values like DISCORD_TOKEN, use:
+# wrangler secret put DISCORD_TOKEN 

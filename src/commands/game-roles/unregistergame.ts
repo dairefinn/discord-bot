@@ -1,102 +1,117 @@
-import { CommandInteraction, SlashCommandBuilder, Guild } from "discord.js";
 import {
-  requireGuild,
-  requireMember,
-  requireStringParameter,
+	InteractionResponseFlags,
+	InteractionResponseType,
+} from "discord-interactions";
+import { Env } from "../..";
+import {
+	DiscordCommandData,
+	DiscordCommandOptionType,
+	DiscordCommandType,
+	DiscordGuild,
+	DiscordInteraction,
+	DiscordInteractionResponse,
+	DiscordMember,
+} from "../../types/discord";
+import { deleteRole, DiscordRole, fetchRoles } from "../../api/roles";
+import {
+	requireAdmin,
+	requireStringOption,
 } from "../../helpers/command-validators";
-import { replyEphemeral } from "../../helpers/response-utils";
+import { fetchGuild } from "../../api/guilds";
+import { fetchMember } from "../../api/members";
+import { MessageResponseError } from "../../types/errors";
 
-export const data = new SlashCommandBuilder()
-  .setName("unregistergame")
-  .setDescription("Un-register a game and delete the role for it")
-  .addStringOption((option) =>
-    option
-      .setName("name")
-      .setDescription("Name of the game to unregister")
-      .setRequired(true)
-      .setAutocomplete(true)
-  );
+export const data: DiscordCommandData = {
+	name: "unregistergame",
+	description: "Unregister a game role",
+	type: DiscordCommandType.CHAT_INPUT,
+	options: [
+		{
+			name: "name",
+			description: "The name of the game to unregister",
+			type: DiscordCommandOptionType.STRING,
+			required: true,
+			autocomplete: true,
+		},
+	],
+	default_member_permissions: "10000000",
+};
 
-// Autocomplete handler for suggesting roles ending with "players"
-export async function autocomplete(interaction: any) {
-  try {
-    const focusedOption = interaction.options.getFocused(true);
-    const guild: Guild | null = interaction.guild;
+export async function autocomplete(
+	interaction: DiscordInteraction,
+	env: Env
+): Promise<DiscordInteractionResponse> {
+	const focusedOption = interaction.data?.options?.find((opt) => opt.focused);
+	const focusedValue = focusedOption?.value || "";
 
-    if (focusedOption.name === "name") {
-      if (!guild) return interaction.respond([]);
+	if (focusedOption?.name === "name") {
+		const roles: DiscordRole[] = await fetchRoles(interaction, env);
 
-      let roleOptions = guild.roles.cache.filter((role) =>
-        role.name.toLowerCase().endsWith(" players")
-      );
+		let roleOptions = roles.filter((role) =>
+			role.name.toLowerCase().endsWith(" players")
+		);
 
-      if (focusedOption.value) {
-        roleOptions = roleOptions.filter((role) =>
-          role.name.toLowerCase().includes(focusedOption.value.toLowerCase())
-        );
-      }
+		if (focusedValue && typeof focusedValue === "string") {
+			roleOptions = roleOptions.filter((role) =>
+				role.name.toLowerCase().includes(focusedValue.toLowerCase())
+			);
+		}
 
-      return interaction.respond(
-        roleOptions.map((r) => {
-          const nameWithoutAppendix = r.name.replace(/ players$/i, "");
-          return {
-            name: nameWithoutAppendix,
-            value: nameWithoutAppendix,
-          };
-        })
-      );
-    }
+		const choices = roleOptions.map((r) => ({
+			name: r.name.replace(/ players$/i, ""),
+			value: r.name.replace(/ players$/i, ""),
+		}));
 
-    return interaction.respond([]);
-  } catch (error) {
-    console.error("Error in autocomplete:", error);
-    await interaction.respond([]);
-  }
+		return {
+			type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+			data: {
+				choices,
+			},
+		};
+	}
+
+	return {
+		type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
+		data: {
+			choices: [],
+		},
+	};
 }
 
-export async function execute(interaction: CommandInteraction) {
-  console.info("Running the unregistergame command");
-  console.info("User ID: " + interaction.user.id);
-  console.info("Guild ID: " + interaction.guildId);
+export async function execute(
+	interaction: DiscordInteraction,
+	env: Env
+): Promise<DiscordInteractionResponse> {
+	const guild: DiscordGuild = await fetchGuild(env, interaction.guild_id);
+	const member: DiscordMember = await fetchMember(
+		env,
+		interaction.guild_id,
+		interaction.member.user.id
+	);
+	const name: string = await requireStringOption(
+		interaction,
+		"name",
+		"Game name is required."
+	);
+	const roles: DiscordRole[] = await fetchRoles(interaction, env);
+	requireAdmin(roles, member, guild);
 
-  const guild = requireGuild(interaction);
-  requireMember(interaction, guild, "Administrator");
-  const game = requireStringParameter(
-    interaction,
-    "game",
-    "You must provide a game name."
-  );
+	const roleName = `${name} players`;
+	const existingRole = roles.find(
+		(role) => role.name.toLowerCase() === roleName.toLowerCase()
+	);
 
-  console.info("All prerequisites checks have passed");
+	if (!existingRole) {
+		throw new MessageResponseError(`No role found for "${name}".`);
+	}
 
-  const roleName = `${game} players`;
+	await deleteRole(interaction, env, existingRole.id);
 
-  // Get all roles in the guild
-  const roles = guild.roles.cache;
-
-  // Find the role (case-insensitive)
-  const role = roles.find(
-    (role) => role.name.toLowerCase() === roleName.toLowerCase()
-  );
-
-  if (!role) {
-    return replyEphemeral(
-      interaction,
-      `The role "${roleName}" does not exist.`
-    );
-  }
-
-  // Delete the role
-  try {
-    await role.delete("Role deleted via unregistergame command");
-    console.info(`Role deleted: ${role.name}`);
-  } catch (error) {
-    console.error("Error deleting role:", error);
-    return replyEphemeral(interaction, "There was an error deleting the role.");
-  }
-
-  return replyEphemeral(
-    interaction,
-    `Deleted role "${roleName}" for game "${game}".`
-  );
+	return {
+		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+		data: {
+			content: `Deleted "${roleName}" role.`,
+			flags: InteractionResponseFlags.EPHEMERAL,
+		},
+	};
 }
