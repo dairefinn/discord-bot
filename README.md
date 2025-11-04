@@ -2,7 +2,11 @@
 
 This is a bot for the Discord app which I am creating because I am bored waiting for the game "The Lord of the Rings: Return to Moria" to install :)
 
-I've recently started developing it again because I want to manage roles on my server. We have a role for every game we play and if we want to play it, we'll usually @ the role in the chat. I want this bot to allow people to register their own games so I don't have to do it manually. I also want people to be able to join and leave these roles automatically so that I also don't have to do it manually.
+I've recently started developing it again because I want to manage roles on my server. We have a role for every game we play and if we want to play it, we'll usually mention the role in the chat using @.
+
+This bot allows me to create new roles eg "Arc raiders players" using `/registergame Arc raiders` and then anyone interested in playing can use the `/addgame` command to add themselves to the new roles or use the `/removegame` command to remove themselves from it if they no longer want to play. The bot also allows me to unregister games using `/unregistergame <GAME_NAME>` and this will delete the role with the name of the game.
+
+`/addgame`, `/removegame` and `/unregistergame` all have autocomplete suggestions which query the existing roles and suggest them to the user. The bot knows which roles to suggest because all the game roles end with " players" - this is just a convention I've chosen to make it easier to identify the game roles without having to use any sort of database.
 
 # Features
 
@@ -19,9 +23,7 @@ I'm using this bot to manage roles on my server. Admins can register and unregis
 
 ## Other commands
 
-- `/ping` - A simple ping command to check if the bot is online. Responds with "Pong!" if the bot is online.
 - `/echo` - A simple echo command to check if the bot is online. Responds with the same message that was sent to the bot.
-- `/gnomed` - Joins the voice channel of the user who sent the command, plays a gnome ooh sound effect and then leaves the voice channel.
 
 # Environment variables
 
