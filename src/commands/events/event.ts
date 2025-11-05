@@ -34,6 +34,30 @@ export const data: DiscordCommandData = {
 	default_member_permissions: "10000000",
 };
 
+const getEventIdFromURL = (url: string): string | null => {
+	const urlWithoutProtocol = url.replace(/^https?:\/\//, "");
+
+	const splitUrl = urlWithoutProtocol
+		.split("/")
+		.filter((segment) => segment.trim() !== "");
+	const hostname = splitUrl[0];
+
+	if (hostname === "discord.com") {
+		const eventId = splitUrl[3];
+		if (!eventId) return null;
+		return eventId;
+	}
+
+	if (hostname === "discord.gg") {
+		const queryParams = splitUrl[1].split("?")[1];
+		const eventId = queryParams?.split("=")[1];
+		if (!eventId) return null;
+		return eventId;
+	}
+
+	return null;
+};
+
 export async function execute(
 	interaction: DiscordInteraction,
 	env: Env
@@ -57,18 +81,17 @@ export async function execute(
 		throw new MessageResponseError("Event URL is required.");
 	}
 
-	// Validate that it looks like a Discord event URL
-	if (
-		!eventUrl.includes("discord.com/events/") &&
-		!eventUrl.includes("discord.gg/")
-	) {
-		throw new MessageResponseError(
-			"Please provide a valid Discord event URL (should contain 'discord.com/events/' or 'discord.gg/')."
-		);
+	// Extract the event ID so we can construct the full URL safely.
+	// This should prevent anyone from injecting their own URL and abusing the @eveyone mention.
+	const eventId = getEventIdFromURL(eventUrl);
+	if (!eventId) {
+		throw new MessageResponseError("Please provide a valid Discord event URL.");
 	}
 
+	const constructedUrl = `https://discord.com/events/${interaction.guild_id}/${eventId}`;
+
 	// Create the announcement message with @everyone mention and event link
-	const message = `@everyone New event! Express your interest here:\n${eventUrl}`;
+	const message = `@everyone New event! Express your interest here:\n${constructedUrl}`;
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
