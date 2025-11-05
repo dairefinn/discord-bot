@@ -68,13 +68,15 @@ export async function execute(
 	}
 
 	// Create the announcement message with @everyone mention and event link
-	const message = `<@dairefinn>\n\nA new event has been created! Express your interest here:\n${eventUrl}`;
+	const message = `@everyone New event! Express your interest here:\n${eventUrl}`;
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		data: {
 			content: message,
-			flags: InteractionResponseFlags.EPHEMERAL, // TODO: Do NOT include EPHEMERAL flag so everyone can see the message
+			allowed_mentions: {
+				parse: ["everyone"],
+			},
 		},
 	};
 }

@@ -47,6 +47,7 @@ async function handleSlashCommand(
 		const response = await command.execute(interaction, env);
 		return jsonResponse(response);
 	} catch (error: unknown) {
+		console.log("Error executing command:", error);
 		const errorMessage =
 			error instanceof Error ? error.message : "An error occurred";
 		return jsonResponse({

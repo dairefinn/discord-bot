@@ -47,6 +47,12 @@ export interface DiscordInteractionResponse {
 			name: string;
 			value: string;
 		}>;
+		allowed_mentions?: {
+			parse?: string[];
+			roles?: string[];
+			users?: string[];
+			replied_user?: boolean;
+		};
 	};
 }
 
