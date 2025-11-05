@@ -13,6 +13,14 @@ export interface DiscordMember {
 	};
 }
 
+export interface DiscordInteractionOption {
+	name: string;
+	type: number;
+	value?: string | number | boolean;
+	focused?: boolean;
+	options?: DiscordInteractionOption[];
+}
+
 export interface DiscordInteraction {
 	id: string;
 	application_id: string;
@@ -21,12 +29,7 @@ export interface DiscordInteraction {
 		id: string;
 		name: string;
 		type: number;
-		options?: Array<{
-			name: string;
-			type: number;
-			value?: string | number | boolean;
-			focused?: boolean;
-		}>;
+		options?: DiscordInteractionOption[];
 	};
 	guild_id: string;
 	channel_id: string;
@@ -44,6 +47,12 @@ export interface DiscordInteractionResponse {
 			name: string;
 			value: string;
 		}>;
+		allowed_mentions?: {
+			parse?: string[];
+			roles?: string[];
+			users?: string[];
+			replied_user?: boolean;
+		};
 	};
 }
 
@@ -51,6 +60,19 @@ export interface DiscordGuild {
 	id: string;
 	name: string;
 	owner_id: string;
+}
+
+export interface DiscordCommandOption {
+	name: string;
+	description: string;
+	type: number;
+	required?: boolean;
+	choices?: Array<{
+		name: string;
+		value: string | number;
+	}>;
+	autocomplete?: boolean;
+	options?: DiscordCommandOption[];
 }
 
 export interface DiscordCommandData {
@@ -62,17 +84,7 @@ export interface DiscordCommandData {
 	// name_localizations?:
 	description: string;
 	// description_localizations?:
-	options?: Array<{
-		name: string;
-		description: string;
-		type: number;
-		required?: boolean;
-		choices?: Array<{
-			name: string;
-			value: string | number;
-		}>;
-		autocomplete?: boolean;
-	}>;
+	options?: DiscordCommandOption[];
 	default_member_permissions?: string;
 	// dm_permission?: boolean;
 	// default_permission?: boolean;

@@ -12,6 +12,8 @@ import * as unregistergame from "./game-roles/unregistergame";
 
 import * as echo from "./util/echo";
 
+import * as event from "./events/event";
+
 export interface Command {
 	data: DiscordCommandData;
 	execute: (
@@ -34,4 +36,5 @@ export const commands: { [key: string]: Command } = {
 	registergame,
 	unregistergame,
 	echo,
+	event,
 };

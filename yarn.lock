@@ -668,10 +668,10 @@ dir-glob@^3.0.1:
   dependencies:
     path-type "^4.0.0"
 
-discord-interactions@^4.3.0:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/discord-interactions/-/discord-interactions-4.3.0.tgz#8bd82c764d7b61070e8ad2d5e905fb6ee5dcdfca"
-  integrity sha512-qCJEnuQeIDIo26MPEqYlIiYokqwFAMoRsmEE0PgAuiTYNXIMB9Z40LmqlgYe0yBO+743+AOnfTQdUK1WLg8+pw==
+discord-interactions@^4.4.0:
+  version "4.4.0"
+  resolved "https://registry.yarnpkg.com/discord-interactions/-/discord-interactions-4.4.0.tgz#8dfb7f1a985ba7649943fac9c7f918bca7300111"
+  integrity sha512-jjJx8iwAeJcj8oEauV43fue9lNqkf38fy60aSs2+G8D1nJmDxUIrk08o3h0F3wgwuBWWJUZO+X/VgfXsxpCiJA==
 
 doctrine@^3.0.0:
   version "3.0.0"

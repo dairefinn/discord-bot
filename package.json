@@ -31,6 +31,6 @@
 		"wrangler": "^4.15.2"
 	},
 	"dependencies": {
-		"discord-interactions": "^4.3.0"
+		"discord-interactions": "^4.4.0"
 	}
 }
