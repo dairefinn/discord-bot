@@ -14,6 +14,7 @@ import {
 import { validateRequest } from "./helpers/request-validation";
 import { CodeBlockError, MessageResponseError } from "./types/errors";
 import { deleteCommand, getCommands, registerCommand } from "./api/commands";
+import { InteractionLogger } from "./helpers/interaction-logger";
 
 export interface Env {
 	DISCORD_TOKEN: string;
@@ -26,6 +27,8 @@ async function handleSlashCommand(
 	env: Env,
 	interaction: DiscordInteraction
 ): Promise<Response> {
+	const logger = new InteractionLogger(interaction, "COMMAND");
+
 	try {
 		JSON.stringify(interaction);
 		if (!interaction.data) {
@@ -34,6 +37,8 @@ async function handleSlashCommand(
 				JSON.stringify(interaction)
 			);
 		}
+
+		logger.log("Command started");
 
 		const command = commands[
 			interaction.data.name as keyof typeof commands
@@ -44,10 +49,14 @@ async function handleSlashCommand(
 			);
 		}
 
+		logger.log("Executing command");
 		const response = await command.execute(interaction, env);
+		logger.log("Command executed successfully");
+		logger.finish("success");
 		return jsonResponse(response);
 	} catch (error: unknown) {
-		console.log("Error executing command:", error);
+		logger.log("Command execution failed");
+		logger.finish("error", error);
 		const errorMessage =
 			error instanceof Error ? error.message : "An error occurred";
 		return jsonResponse({
@@ -64,34 +73,38 @@ async function handleAutocompleteCommand(
 	env: Env,
 	interaction: DiscordInteraction
 ): Promise<Response> {
+	const logger = new InteractionLogger(interaction, "AUTOCOMPLETE");
+
 	if (!interaction.data) {
+		logger.finish("error", new Error("Missing command data"));
 		return errorResponse("Missing command data", 400);
 	}
+
+	logger.log("Autocomplete started");
 
 	const command = commands[
 		interaction.data.name as keyof typeof commands
 	] as Command;
 	if (!command?.autocomplete) {
-		return errorResponse(
-			`Command ${interaction.data.name} does not support autocomplete`,
-			400
+		const error = new Error(
+			`Command ${interaction.data.name} does not support autocomplete`
 		);
+		logger.finish("error", error);
+		return errorResponse(error.message, 400);
 	}
 
 	try {
+		logger.log("Executing autocomplete");
 		const response = await command.autocomplete(interaction, env);
+		logger.log("Autocomplete completed successfully");
+		logger.finish("success");
 		return jsonResponse(response);
 	} catch (error: unknown) {
-		console.error("Error handling autocomplete:", error);
+		logger.log("Autocomplete execution failed");
+		logger.finish("error", error);
 		const errorMessage =
 			error instanceof Error ? error.message : "An error occurred";
 		return errorResponse(errorMessage, 500);
-		// return jsonResponse({
-		// 	type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-		// 	data: {
-		// 		choices: [],
-		// 	},
-		// });
 	}
 }
 
@@ -100,10 +113,14 @@ async function handleRegisterCommands(env: Env): Promise<Response> {
 		return errorResponse("Not found", 404);
 	}
 
+	console.log("[REGISTER] Starting bulk command registration");
 	const results: Record<string, unknown> = {};
 
 	// // Unregister existing commands
 	const existingCommands = await getCommands(env);
+	console.log(
+		`[REGISTER] Found ${existingCommands.length} existing commands to unregister`
+	);
 	// return jsonResponse(existingCommands);
 
 	for (const command of existingCommands) {
@@ -125,15 +142,21 @@ async function handleRegisterCommands(env: Env): Promise<Response> {
 	}
 
 	// Register all commands
+	console.log(
+		`[REGISTER] Registering ${Object.keys(commands).length} commands`
+	);
 	for (const [name, command] of Object.entries(commands)) {
 		try {
 			const result = await registerCommand(env, command.data);
+			console.log(`[REGISTER] Successfully registered command: ${name}`);
 			results[name] = { success: true, result };
 		} catch (err) {
+			console.log(`[REGISTER] Failed to register command ${name}:`, err);
 			results[name] = { success: false, error: (err as Error).message };
 		}
 	}
 
+	console.log("[REGISTER] Bulk registration complete");
 	return jsonResponse(results);
 }
 
@@ -271,17 +294,19 @@ const worker = {
 				return errorResponse("Invalid request body", 400);
 			}
 
-			console.log("Received command interaction:", interaction.type);
-
 			// Handle interaction types
 			switch (interaction.type) {
 				case InteractionType.PING:
+					console.log("[INTERACTION] Responding to PING");
 					return jsonResponse({ type: InteractionResponseType.PONG });
 				case InteractionType.APPLICATION_COMMAND:
 					return handleSlashCommand(env, interaction);
 				case InteractionType.APPLICATION_COMMAND_AUTOCOMPLETE:
 					return handleAutocompleteCommand(env, interaction);
 				default:
+					console.log(
+						`[INTERACTION] Unsupported interaction type: ${interaction.type}`
+					);
 					return errorResponse(
 						`Unsupported interaction type: ${interaction.type}`,
 						400
