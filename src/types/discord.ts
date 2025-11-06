@@ -31,9 +31,10 @@ export interface DiscordInteraction {
 		type: number;
 		options?: DiscordInteractionOption[];
 	};
-	guild_id: string;
+	guild_id?: string;
 	channel_id: string;
-	member: DiscordMember;
+	member?: DiscordMember;
+	user?: DiscordUser;
 	token: string;
 	version: number;
 }
