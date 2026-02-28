@@ -1,6 +1,7 @@
 import { Env } from "..";
 import { DiscordCommandData } from "../types/discord";
 import { CodeBlockError } from "../types/errors";
+import { assertResponseOk } from "./utils";
 
 const BASE_URL = "https://discord.com/api/v10/applications";
 
@@ -35,10 +36,7 @@ export async function registerCommand(
 		throw error;
 	}
 
-	if (!response.ok) {
-		console.error(await response.json());
-		throw new Error(`Failed to register command: ${response.statusText}`);
-	}
+	await assertResponseOk(response, "register command");
 
 	return response.json();
 }
@@ -71,9 +69,7 @@ export async function deleteCommand(
 		throw error;
 	}
 
-	if (!response.ok) {
-		throw new Error(`Failed to delete command: ${response.statusText}`);
-	}
+	await assertResponseOk(response, "delete command");
 
 	// Discord returns 204 No Content on success
 	if (response.status === 204) {
@@ -112,9 +108,7 @@ export async function getCommands(
 		throw error;
 	}
 
-	if (!response.ok) {
-		throw new Error(`Failed to get commands: ${response.statusText}`);
-	}
+	await assertResponseOk(response, "get commands");
 
 	return await response.json();
 }
