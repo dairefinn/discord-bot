@@ -1,6 +1,7 @@
 import { Env } from "..";
 import { DiscordInteraction } from "../types/discord";
 import { CodeBlockError } from "../types/errors";
+import { assertResponseOk } from "./utils";
 
 export interface DiscordRole {
 	id: string;
@@ -28,6 +29,8 @@ export async function fetchRoles(
 				},
 			}
 		);
+
+		await assertResponseOk(rolesResponse, "fetch roles");
 
 		return rolesResponse.json();
 	} catch (error) {
@@ -78,9 +81,7 @@ export async function createRole(
 		throw error;
 	}
 
-	if (!createRoleResponse.ok) {
-		throw new Error("Failed to create role");
-	}
+	await assertResponseOk(createRoleResponse, "create role");
 
 	return createRoleResponse.json();
 }
@@ -114,7 +115,5 @@ export async function deleteRole(
 		throw error;
 	}
 
-	if (!deleteRoleResponse.ok) {
-		throw new Error("Failed to delete the role. Please try again later.");
-	}
+	await assertResponseOk(deleteRoleResponse, "delete role");
 }

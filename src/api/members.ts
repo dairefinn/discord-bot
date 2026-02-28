@@ -1,6 +1,7 @@
 import { Env } from "..";
 import { DiscordMember } from "../types/discord";
 import { CodeBlockError, MessageResponseError } from "../types/errors";
+import { assertResponseOk } from "./utils";
 
 export async function fetchMember(
 	env: Env,
@@ -66,16 +67,7 @@ export async function addMemberRole(
 		throw error;
 	}
 
-	if (!addRoleResponse.ok) {
-		const body = await addRoleResponse.json();
-		throw new CodeBlockError(
-			"Failed to add the role. Please try again later.",
-			JSON.stringify(body)
-		);
-		// throw new MessageResponseError(
-		// 	"Failed to add the role. Please try again later."
-		// );
-	}
+	await assertResponseOk(addRoleResponse, "add role to member");
 }
 
 export async function removeMemberRole(
@@ -106,14 +98,5 @@ export async function removeMemberRole(
 		throw error;
 	}
 
-	if (!removeRoleResponse.ok) {
-		const body = await removeRoleResponse.json();
-		throw new CodeBlockError(
-			"Failed to remove the role. Please try again later.",
-			JSON.stringify(body)
-		);
-		// throw new MessageResponseError(
-		// 	"Failed to remove the role. Please try again later."
-		// );
-	}
+	await assertResponseOk(removeRoleResponse, "remove role from member");
 }
