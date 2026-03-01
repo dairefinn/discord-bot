@@ -1,5 +1,5 @@
 import { verifyKey } from "discord-interactions";
-import { Env } from "..";
+import { Env } from "../types/env";
 
 export async function validateRequest(
 	body: string,

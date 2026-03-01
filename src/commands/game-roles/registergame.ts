@@ -2,7 +2,7 @@ import {
 	InteractionResponseFlags,
 	InteractionResponseType,
 } from "discord-interactions";
-import { Env } from "../..";
+import { Env } from "../../types/env";
 import { DiscordRole, fetchRoles, createRole } from "../../api/roles";
 import {
 	requireStringOption,
