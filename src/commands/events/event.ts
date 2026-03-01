@@ -31,7 +31,7 @@ export const data: DiscordCommandData = {
 			],
 		},
 	],
-	default_member_permissions: "10000000",
+	default_member_permissions: "8",
 };
 
 const getEventIdFromURL = (url: string): string | null => {

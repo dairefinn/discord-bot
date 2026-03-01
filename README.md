@@ -12,18 +12,31 @@ This bot allows me to create new roles for any games we are playing. For Example
 
 ## Game role management
 
-I'm using this bot to manage roles on my server. Admins can register and unregister games that players are playing in their server. Players than then opt in to roles related to these games. This allows players to mention the role in the chat to try and get others to play with them.
+I'm using this bot to manage roles on my server. Admins can register and unregister games that players are playing in their server. Players can then opt in to roles related to these games. This allows players to mention the role in the chat to try and get others to play with them.
 
 **Commands:**
 
 - `/addgame <GAME_NAME>` - Adds you to the role of the provided game if it exists.
 - `/removegame <GAME_NAME>` - Removes you from the role of the provided game if it exists.
-- `/registergame <GAME_NAME>` - Registers a game with the bot. This will create a new role with the name of the game.
-- `/unregistergame <GAME_NAME>` - Unregisters a game with the bot. This will delete the role with the name of the game.
+- `/listgames` - Lists all registered games, split into games you've joined and games available to join.
+- `/registergame <GAME_NAME>` - *(Admin)* Registers a game with the bot. This will create a new role with the name of the game.
+- `/unregistergame <GAME_NAME>` - *(Admin)* Unregisters a game with the bot. This will delete the role with the name of the game.
 
-## Other commands
+## Event announcements
 
-- `/echo` - A simple echo command to check if the bot is online. Responds with the same message that was sent to the bot.
+Admins can broadcast Discord events to the server with an `@everyone` mention so nobody misses out. The bot validates and reconstructs the event URL to prevent abuse of the `@everyone` ping.
+
+**Commands:**
+
+- `/event init <EVENT_URL>` - *(Admin)* Posts an `@everyone` announcement linking to the provided Discord event.
+
+## Utility & admin
+
+A handful of commands for bot administration and diagnostics. `/synccommands` pushes the latest command definitions to a server, while `/ping` and `/echo` are quick health-checks.
+
+- `/synccommands` - *(Admin)* Bulk-overwrites all bot commands on the current server.
+- `/ping` - *(Admin)* Replies with "Pong!".
+- `/echo <MESSAGE>` - *(Admin)* Echoes the provided message back.
 
 # Environment variables
 
