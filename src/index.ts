@@ -16,8 +16,6 @@ import { CodeBlockError, MessageResponseError } from "./types/errors";
 import { InteractionLogger } from "./helpers/interaction-logger";
 import { Env } from "./types/env";
 
-export type { Env };
-
 async function handleSlashCommand(
 	env: Env,
 	interaction: DiscordInteraction
