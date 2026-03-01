@@ -3,7 +3,7 @@ import {
 	DiscordInteraction,
 	DiscordInteractionResponse,
 } from "../types/discord";
-import { Env } from "../index";
+import { Env } from "../types/env";
 
 import * as addgame from "./game-roles/addgame";
 import * as removegame from "./game-roles/removegame";
@@ -14,6 +14,8 @@ import * as listgames from "./game-roles/listgames";
 import * as echo from "./util/echo";
 
 import * as event from "./events/event";
+
+import * as synccommands from "./admin/synccommands";
 
 export interface Command {
 	data: DiscordCommandData;
@@ -39,4 +41,5 @@ export const commands: { [key: string]: Command } = {
 	listgames,
 	echo,
 	event,
+	synccommands,
 };

@@ -1,4 +1,4 @@
-import { Env } from "..";
+import { Env } from "../types/env";
 import { DiscordMember } from "../types/discord";
 import { CodeBlockError, MessageResponseError } from "../types/errors";
 import { assertResponseOk } from "./utils";

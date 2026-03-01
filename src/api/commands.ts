@@ -1,4 +1,4 @@
-import { Env } from "..";
+import { Env } from "../types/env";
 import { DiscordCommandData } from "../types/discord";
 import { CodeBlockError } from "../types/errors";
 import { assertResponseOk } from "./utils";
@@ -79,6 +79,41 @@ export async function deleteCommand(
 	// If there is a body, try to parse it
 	const text = await response.text();
 	return text ? JSON.parse(text) : { success: true };
+}
+
+export async function bulkOverwriteCommands(
+	env: Env,
+	commandsData: DiscordCommandData[],
+	guildId?: string
+) {
+	let response: Response;
+
+	try {
+		const url = guildId
+			? `${BASE_URL}/${env.DISCORD_APPLICATION_ID}/guilds/${guildId}/commands`
+			: `${BASE_URL}/${env.DISCORD_APPLICATION_ID}/commands`;
+		response = await fetch(url, {
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+				Authorization: `Bot ${env.DISCORD_TOKEN}`,
+			},
+			body: JSON.stringify(commandsData),
+		});
+	} catch (error) {
+		if (error instanceof Error) {
+			throw new CodeBlockError(
+				"Error bulk overwriting commands:",
+				error.stack || error.message
+			);
+		}
+
+		throw error;
+	}
+
+	await assertResponseOk(response, "bulk overwrite commands");
+
+	return response.json();
 }
 
 export async function getCommands(

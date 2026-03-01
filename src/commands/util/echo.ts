@@ -26,6 +26,7 @@ export const data: DiscordCommandData = {
 			required: true,
 		},
 	],
+	default_member_permissions: "8",
 };
 
 export async function execute(

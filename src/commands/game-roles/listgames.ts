@@ -2,7 +2,7 @@ import {
 	InteractionResponseFlags,
 	InteractionResponseType,
 } from "discord-interactions";
-import { Env } from "../..";
+import { Env } from "../../types/env";
 import {
 	DiscordCommandData,
 	DiscordCommandType,

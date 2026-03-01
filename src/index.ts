@@ -13,15 +13,10 @@ import {
 } from "./helpers/request-responses";
 import { validateRequest } from "./helpers/request-validation";
 import { CodeBlockError, MessageResponseError } from "./types/errors";
-import { deleteCommand, getCommands, registerCommand } from "./api/commands";
 import { InteractionLogger } from "./helpers/interaction-logger";
+import { Env } from "./types/env";
 
-export interface Env {
-	DISCORD_TOKEN: string;
-	DISCORD_PUBLIC_KEY: string;
-	DISCORD_APPLICATION_ID: string;
-	ALLOW_REGISTER_COMMANDS: boolean;
-}
+export type { Env };
 
 async function handleSlashCommand(
 	env: Env,
@@ -108,126 +103,6 @@ async function handleAutocompleteCommand(
 	}
 }
 
-async function handleRegisterCommands(env: Env): Promise<Response> {
-	if (!env.ALLOW_REGISTER_COMMANDS) {
-		return errorResponse("Not found", 404);
-	}
-
-	console.log("[REGISTER] Starting bulk command registration");
-	const results: Record<string, unknown> = {};
-
-	// // Unregister existing commands
-	const existingCommands = await getCommands(env);
-	console.log(
-		`[REGISTER] Found ${existingCommands.length} existing commands to unregister`
-	);
-	// return jsonResponse(existingCommands);
-
-	for (const command of existingCommands) {
-		const commandId: string | undefined = command.id;
-		if (!commandId) {
-			results[command.name] = {
-				success: false,
-				error: "Command ID is missing",
-			};
-			continue;
-		}
-
-		try {
-			const result = await deleteCommand(env, commandId);
-			results[commandId] = { success: true, result };
-		} catch (err) {
-			results[commandId] = { success: false, error: (err as Error).message };
-		}
-	}
-
-	// Register all commands
-	console.log(
-		`[REGISTER] Registering ${Object.keys(commands).length} commands`
-	);
-	for (const [name, command] of Object.entries(commands)) {
-		try {
-			const result = await registerCommand(env, command.data);
-			console.log(`[REGISTER] Successfully registered command: ${name}`);
-			results[name] = { success: true, result };
-		} catch (err) {
-			console.log(`[REGISTER] Failed to register command ${name}:`, err);
-			results[name] = { success: false, error: (err as Error).message };
-		}
-	}
-
-	console.log("[REGISTER] Bulk registration complete");
-	return jsonResponse(results);
-}
-
-async function handleListRegisteredCommands(env: Env): Promise<Response> {
-	if (!env.ALLOW_REGISTER_COMMANDS) {
-		return errorResponse("Not found", 404);
-	}
-
-	const commands = await getCommands(env);
-	return jsonResponse(commands);
-}
-
-async function handleDeleteCommand(env: Env, body: string): Promise<Response> {
-	if (!env.ALLOW_REGISTER_COMMANDS) {
-		return errorResponse("Not found", 404);
-	}
-
-	// Get the commandId from the request body
-
-	let commandId: string | undefined;
-	try {
-		const parsedBody = JSON.parse(body);
-		commandId = parsedBody.commandId;
-	} catch (error) {
-		console.error("Failed to parse request body:", error);
-		return errorResponse("Invalid request body", 400);
-	}
-	if (!commandId) {
-		return errorResponse("Command ID is required", 400);
-	}
-
-	try {
-		const result = await deleteCommand(env, commandId);
-		return jsonResponse(result);
-	} catch (err) {
-		return errorResponse((err as Error).message, 500);
-	}
-}
-
-async function handleRegisterCommand(
-	env: Env,
-	body: string
-): Promise<Response> {
-	if (!env.ALLOW_REGISTER_COMMANDS) {
-		return errorResponse("Not found", 404);
-	}
-
-	// Get the command name from the request body
-	let commandName: string | undefined;
-	try {
-		const parsedBody = JSON.parse(body);
-		commandName = parsedBody.commandName;
-	} catch (error) {
-		console.error("Failed to parse request body:", error);
-		return errorResponse("Invalid request body", 400);
-	}
-
-	// Get command data from the commands object
-	const command = commands[commandName as keyof typeof commands];
-	if (!command) {
-		return errorResponse(`Command ${commandName} not found`, 404);
-	}
-
-	try {
-		const result = await registerCommand(env, command.data);
-		return jsonResponse(result);
-	} catch (err) {
-		return errorResponse((err as Error).message, 500);
-	}
-}
-
 const worker = {
 	async fetch(
 		request: Request,
@@ -239,45 +114,16 @@ const worker = {
 			// Handle CORS preflight requests
 			if (request.method === "OPTIONS") return corsOptionsResponse();
 
-			// // Register commands endpoint (dev only)
-			// if (
-			// 	request.method === "POST" &&
-			// 	new URL(request.url).pathname === "/register-commands"
-			// ) {
-			// 	return handleRegisterCommands(env);
-			// }
-
 			// Redirect GET requests to my website
 			if (request.method === "GET")
 				return redirectResponse("https://www.dairefinn.com");
 
-			// Get the request body
-			const body = await request.text();
-
-			if (
-				request.method === "POST" &&
-				new URL(request.url).pathname === "/list-commands"
-			) {
-				return handleListRegisteredCommands(env);
-			}
-
-			if (
-				request.method === "POST" &&
-				new URL(request.url).pathname === "/delete-command"
-			) {
-				return handleDeleteCommand(env, body);
-			}
-
-			if (
-				request.method === "POST" &&
-				new URL(request.url).pathname === "/register-command"
-			) {
-				return handleRegisterCommand(env, body);
-			}
-
 			// Only allow POST requests
 			if (request.method !== "POST")
 				return errorResponse("Method not allowed", 405);
+
+			// Get the request body
+			const body = await request.text();
 
 			// Validate the request
 			try {
