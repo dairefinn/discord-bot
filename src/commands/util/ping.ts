@@ -9,6 +9,7 @@ export const data: DiscordCommandData = {
 	name: "ping",
 	description: "Replies with pong",
 	type: DiscordCommandType.CHAT_INPUT,
+	default_member_permissions: "8",
 };
 
 export async function execute(): Promise<DiscordInteractionResponse> {
