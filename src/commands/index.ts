@@ -12,6 +12,7 @@ import * as unregistergame from "./game-roles/unregistergame";
 import * as listgames from "./game-roles/listgames";
 
 import * as echo from "./util/echo";
+import * as ping from "./util/ping";
 
 import * as event from "./events/event";
 
@@ -40,6 +41,7 @@ export const commands: { [key: string]: Command } = {
 	unregistergame,
 	listgames,
 	echo,
+	ping,
 	event,
 	synccommands,
 };
