@@ -67,13 +67,12 @@ export async function execute(
 		};
 	}
 
-	await createRole(interaction, env, roleName);
+	const newRole: DiscordRole = await createRole(interaction, env, roleName);
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		data: {
-			content: `Added "${roleName}" role.`,
-			flags: InteractionResponseFlags.EPHEMERAL,
+			content: `<@&${newRole.id}> has been created. Use /addgame to join it.`,
 		},
 	};
 }
