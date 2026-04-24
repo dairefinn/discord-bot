@@ -5,8 +5,11 @@
 	"scripts": {
 		"dev": "npx wrangler dev",
 		"deploy": "npx wrangler deploy",
-		"format": "prettier --write  '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
-		"lint": "eslint --max-warnings=0 src && prettier --check '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
+		"lint": "yarn check:prettier && yarn check:eslint && yarn check:tsc",
+		"check:prettier": "prettier --check --no-error-on-unmatched-pattern '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
+		"check:eslint": "eslint --max-warnings=0 src",
+		"check:tsc": "tsc --noEmit",
+		"fix:prettier": "prettier --write --no-error-on-unmatched-pattern '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
 		"register": "tsx src/register-commands.ts"
 	},
