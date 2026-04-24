@@ -18,6 +18,7 @@ import {
 } from "../../types/discord";
 import { fetchGuild } from "../../api/guilds";
 import { fetchMember } from "../../api/members";
+import { getCommands } from "../../api/commands";
 
 export const data: DiscordCommandData = {
 	name: "registergame",
@@ -68,11 +69,18 @@ export async function execute(
 	}
 
 	const newRole: DiscordRole = await createRole(interaction, env, roleName);
+	const registeredCommands: DiscordCommandData[] = await getCommands(env);
+	const addgameCmd: DiscordCommandData | undefined = registeredCommands.find(
+		(cmd) => cmd.name === "addgame"
+	);
+	const addgameMention: string = addgameCmd?.id
+		? `</${addgameCmd.name}:${addgameCmd.id}>`
+		: "/addgame";
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		data: {
-			content: `<@&${newRole.id}> has been created. Use /addgame to join it.`,
+			content: `<@&${newRole.id}> has been created. Use ${addgameMention} to join it.`,
 		},
 	};
 }
