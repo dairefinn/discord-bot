@@ -6,9 +6,6 @@ export async function assertResponseOk(
 ): Promise<void> {
 	if (!response.ok) {
 		const errorData = await response.json().catch(() => response.statusText);
-		throw new CodeBlockError(
-			`Failed to ${action}:`,
-			JSON.stringify(errorData)
-		);
+		throw new CodeBlockError(`Failed to ${action}:`, JSON.stringify(errorData));
 	}
 }

@@ -1,7 +1,4 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
+import { InteractionResponseType } from "discord-interactions";
 import { Env } from "../../types/env";
 import {
 	DiscordCommandData,
@@ -60,7 +57,7 @@ const getEventIdFromURL = (url: string): string | null => {
 
 export async function execute(
 	interaction: DiscordInteraction,
-	env: Env
+	_env: Env
 ): Promise<DiscordInteractionResponse> {
 	// Get the subcommand
 	const subcommand = interaction.data?.options?.find(

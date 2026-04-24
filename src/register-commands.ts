@@ -31,12 +31,14 @@ function loadWranglerVars(): Record<string, string> {
 			inVars = false;
 			continue;
 		}
-		if (!inVars || trimmed.startsWith("#") || !trimmed.includes("="))
-			continue;
+		if (!inVars || trimmed.startsWith("#") || !trimmed.includes("=")) continue;
 
 		const eqIdx = trimmed.indexOf("=");
 		const key = trimmed.slice(0, eqIdx).trim();
-		const value = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+		const value = trimmed
+			.slice(eqIdx + 1)
+			.trim()
+			.replace(/^["']|["']$/g, "");
 		vars[key] = value;
 	}
 	return vars;
@@ -88,7 +90,9 @@ async function main() {
 	const commandsData = Object.values(commands).map((cmd) => cmd.data);
 	const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
 
-	console.log(`Registering ${commandsData.length} commands to guild ${guildId}...`);
+	console.log(
+		`Registering ${commandsData.length} commands to guild ${guildId}...`
+	);
 
 	const response = await fetch(url, {
 		method: "PUT",
