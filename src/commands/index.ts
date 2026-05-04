@@ -11,6 +11,7 @@ import * as registergame from "./game-roles/registergame";
 import * as unregistergame from "./game-roles/unregistergame";
 import * as listgame from "./game-roles/listgame";
 import * as listgames from "./game-roles/listgames";
+import * as registerplayer from "./game-roles/registerplayer";
 
 import * as echo from "./util/echo";
 import * as ping from "./util/ping";
@@ -42,6 +43,7 @@ export const commands: { [key: string]: Command } = {
 	unregistergame,
 	listgame,
 	listgames,
+	registerplayer,
 	echo,
 	ping,
 	event,
