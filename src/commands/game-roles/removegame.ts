@@ -15,7 +15,10 @@ import {
 } from "../../helpers/autocomplete";
 import { requireStringOption } from "../../helpers/command-validators";
 import { buildSimpleGameRoleAutocompleteChoices } from "../../helpers/game-role-autocomplete";
-import { findGamePlayersRole, gamePlayersRoleLabel } from "../../helpers/game-roles";
+import {
+	findGamePlayersRole,
+	gamePlayersRoleLabel,
+} from "../../helpers/game-roles";
 import { ephemeralReply } from "../../helpers/interaction-reply";
 import { MessageResponseError } from "../../types/errors";
 

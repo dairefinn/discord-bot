@@ -16,7 +16,10 @@ import {
 import { fetchGuild } from "../../api/guilds";
 import { fetchMember } from "../../api/members";
 import { getCommands } from "../../api/commands";
-import { findGamePlayersRole, gamePlayersRoleLabel } from "../../helpers/game-roles";
+import {
+	findGamePlayersRole,
+	gamePlayersRoleLabel,
+} from "../../helpers/game-roles";
 import { ephemeralReply } from "../../helpers/interaction-reply";
 import { slashCommandMention } from "../../helpers/slash-command";
 

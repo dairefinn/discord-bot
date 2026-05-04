@@ -18,7 +18,10 @@ import {
 	getAutocompleteFocus,
 } from "../../helpers/autocomplete";
 import { buildSimpleGameRoleAutocompleteChoices } from "../../helpers/game-role-autocomplete";
-import { findGamePlayersRole, gamePlayersRoleLabel } from "../../helpers/game-roles";
+import {
+	findGamePlayersRole,
+	gamePlayersRoleLabel,
+} from "../../helpers/game-roles";
 import { ephemeralReply } from "../../helpers/interaction-reply";
 import { fetchGuild } from "../../api/guilds";
 import { fetchMember } from "../../api/members";

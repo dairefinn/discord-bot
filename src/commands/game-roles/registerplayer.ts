@@ -19,7 +19,10 @@ import {
 	fetchGuildMembers,
 	fetchMember,
 } from "../../api/members";
-import { autocompleteResult, getAutocompleteFocus } from "../../helpers/autocomplete";
+import {
+	autocompleteResult,
+	getAutocompleteFocus,
+} from "../../helpers/autocomplete";
 import { buildGameRoleAutocompleteChoices } from "../../helpers/game-role-autocomplete";
 import {
 	findGamePlayersRole,
@@ -63,7 +66,9 @@ export async function autocomplete(
 
 	if (optionName === "game") {
 		const roles: DiscordRole[] = await fetchRoles(interaction, env);
-		return autocompleteResult(buildGameRoleAutocompleteChoices(focusedValue, roles));
+		return autocompleteResult(
+			buildGameRoleAutocompleteChoices(focusedValue, roles)
+		);
 	}
 
 	if (optionName === "players") {
@@ -159,7 +164,9 @@ export async function execute(
 	}
 
 	const lines: string[] = [
-		`**${formatGameName(gameRole)}** — ${added} added, ${skipped} already had the role.`,
+		`**${formatGameName(
+			gameRole
+		)}** — ${added} added, ${skipped} already had the role.`,
 	];
 	if (notInGuild.length > 0) {
 		lines.push(

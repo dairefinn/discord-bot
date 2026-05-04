@@ -1,6 +1,9 @@
 import { InteractionResponseType } from "discord-interactions";
 import { DISCORD_AUTOCOMPLETE_MAX_CHOICES } from "../constants/discord-api";
-import { DiscordInteraction, DiscordInteractionResponse } from "../types/discord";
+import {
+	DiscordInteraction,
+	DiscordInteractionResponse,
+} from "../types/discord";
 
 /**
  * Focused option name and string value for autocomplete interactions.
@@ -26,7 +29,9 @@ export function autocompleteResult(
 	};
 }
 
-function capAutocompleteChoices<T extends AutocompleteChoice>(choices: T[]): T[] {
+function capAutocompleteChoices<T extends AutocompleteChoice>(
+	choices: T[]
+): T[] {
 	return choices.slice(0, DISCORD_AUTOCOMPLETE_MAX_CHOICES);
 }
 
@@ -37,7 +42,10 @@ function capAutocompleteChoices<T extends AutocompleteChoice>(choices: T[]): T[]
 export function capAutocompleteInteractionResponse(
 	response: DiscordInteractionResponse
 ): DiscordInteractionResponse {
-	if (response.type !== InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT) {
+	if (
+		response.type !==
+		InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT
+	) {
 		return response;
 	}
 	const choices = response.data?.choices;

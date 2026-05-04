@@ -46,7 +46,9 @@ export async function autocomplete(
 
 	if (optionName === "name") {
 		const roles: DiscordRole[] = await fetchRoles(interaction, env);
-		return autocompleteResult(buildGameRoleAutocompleteChoices(focusedValue, roles));
+		return autocompleteResult(
+			buildGameRoleAutocompleteChoices(focusedValue, roles)
+		);
 	}
 
 	return autocompleteResult([]);
@@ -75,9 +77,7 @@ export async function execute(
 	const gameLabel = formatGameName(existingRole);
 
 	if (withRole.length === 0) {
-		return ephemeralReply(
-			`**${gameLabel}**\n\nNo one has this role yet.`
-		);
+		return ephemeralReply(`**${gameLabel}**\n\nNo one has this role yet.`);
 	}
 
 	const { content, allowed_mentions } = buildBulletMentionListContent(
