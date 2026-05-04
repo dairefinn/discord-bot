@@ -8,11 +8,13 @@ import {
 	DiscordInteractionResponse,
 } from "../../types/discord";
 import { ephemeralReply } from "../../helpers/interaction-reply";
+import { guildSlashCommandsPayload } from "../../helpers/command-payloads";
+import { SYNC_COMMAND_NAME } from "../../constants/sync-command";
 
 const ADMINISTRATOR_PERMISSION = "8";
 
 export const data: DiscordCommandData = {
-	name: "synccommands",
+	name: SYNC_COMMAND_NAME,
 	description: "Sync all bot commands to this server",
 	type: DiscordCommandType.CHAT_INPUT,
 	default_member_permissions: ADMINISTRATOR_PERMISSION,
@@ -27,7 +29,7 @@ export async function execute(
 		return ephemeralReply("This command can only be used in a server.");
 	}
 
-	const commandsData = Object.values(commands).map((cmd) => cmd.data);
+	const commandsData = guildSlashCommandsPayload(commands);
 
 	try {
 		await bulkOverwriteCommands(env, commandsData, guildId);
@@ -35,8 +37,6 @@ export async function execute(
 			`Synced ${commandsData.length} commands to this server.`
 		);
 	} catch (err) {
-		return ephemeralReply(
-			`Failed to sync commands: ${(err as Error).message}`
-		);
+		return ephemeralReply(`Failed to sync commands: ${(err as Error).message}`);
 	}
 }

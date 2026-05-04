@@ -11,7 +11,8 @@
 		"check:tsc": "tsc --noEmit",
 		"fix:prettier": "prettier --write --no-error-on-unmatched-pattern '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-		"register": "tsx src/register-commands.ts"
+		"register": "tsx src/register-commands.ts",
+		"register-sync-global": "tsx src/register-sync-global.ts"
 	},
 	"author": "author",
 	"license": "MIT OR Apache-2.0",

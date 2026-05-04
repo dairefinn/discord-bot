@@ -10,7 +10,13 @@ This bot allows me to create new roles for any games we are playing. For Example
 
 ## Slash command registration
 
-The first time you add this bot to a Discord server, run `yarn register` on your machine so Discord receives every slash command for that guild. I can automate this via global commands but that becomes super annoying when I want to add new commands because it can take a few hours to sync them - this works for now :). To run this you'll need to add some IDs to your environment variables (see **Environment variables**). After that initial push, you can use `/synccommands` in Discord to update command definitions without running the script again.
+When this bot is first invited to a server the only command available will be `/synccommands`. Running this will add all of the other commands to the server.
+
+This is done so to make development easier. When new commands are added you usually have to wait for Discord's scheduler to run and sync them or just re-invite the bot to the server - I don't want to do this :).
+
+If anyone ever decides to deploy this bot to a new environment they can run `yarn register-sync-global` to register `/synccommands` as a global command.
+
+`yarn register` does essentially the same thing as `/synccommands` but it needs some environment variables to be set locally. Use it if you want to register the commands from the terminal instead of Discord.
 
 # Features
 
@@ -40,7 +46,7 @@ Admins can broadcast Discord events to the server with an `@everyone` mention so
 
 A handful of commands for bot administration and diagnostics. `/synccommands` pushes the latest command definitions to a server, while `/ping` and `/echo` are quick health-checks.
 
-- `/synccommands` - _(Admin)_ Bulk-overwrites all bot commands on the current server.
+- `/synccommands` - _(Admin)_ Updates the list of slash commands available on the current server.
 - `/ping` - _(Admin)_ Replies with "Pong!".
 - `/echo <MESSAGE>` - _(Admin)_ Echoes the provided message back.
 

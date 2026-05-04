@@ -1,20 +1,17 @@
 /// <reference types="node" />
 
 /**
- * Register guild-scoped slash commands for the guild in wrangler.toml (excludes `/synccommands`,
- * which is registered globally via `yarn register-sync-global`).
- *
- * Run `yarn register` for a one-off guild push, or use `/synccommands` in Discord for that server.
+ * Register `/synccommands` as the only global application command.
+ * Run after deploying or when changing that command's definition.
  *
  * Usage:
- *   yarn register
+ *   yarn register-sync-global
  *
- * Requires DISCORD_TOKEN to be set in .dev.vars or as an environment variable.
- * Reads DISCORD_APPLICATION_ID and DISCORD_GUILD_ID from wrangler.toml.
+ * Requires DISCORD_TOKEN in .dev.vars or the environment.
+ * Reads DISCORD_APPLICATION_ID from wrangler.toml [vars].
  */
 
-import { commands } from "./commands";
-import { guildSlashCommandsPayload } from "./helpers/command-payloads";
+import * as synccommands from "./commands/admin/synccommands";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -72,15 +69,10 @@ function loadDevVarsToken(): string | undefined {
 async function main() {
 	const wranglerVars = loadWranglerVars();
 	const appId = wranglerVars["DISCORD_APPLICATION_ID"];
-	const guildId = wranglerVars["DISCORD_GUILD_ID"];
 	const token = process.env.DISCORD_TOKEN || loadDevVarsToken();
 
 	if (!appId) {
 		console.error("DISCORD_APPLICATION_ID not found in wrangler.toml [vars]");
-		process.exit(1);
-	}
-	if (!guildId) {
-		console.error("DISCORD_GUILD_ID not found in wrangler.toml [vars]");
 		process.exit(1);
 	}
 	if (!token) {
@@ -90,11 +82,11 @@ async function main() {
 		process.exit(1);
 	}
 
-	const commandsData = guildSlashCommandsPayload(commands);
-	const url = `https://discord.com/api/v10/applications/${appId}/guilds/${guildId}/commands`;
+	const commandsData = [synccommands.data];
+	const url = `https://discord.com/api/v10/applications/${appId}/commands`;
 
 	console.log(
-		`Registering ${commandsData.length} commands to guild ${guildId}...`
+		`Registering ${commandsData.length} global command (${synccommands.data.name})...`
 	);
 
 	const response = await fetch(url, {
@@ -108,13 +100,16 @@ async function main() {
 
 	if (!response.ok) {
 		const error = await response.text();
-		console.error(`Failed to register commands (${response.status}):`, error);
+		console.error(
+			`Failed to register global commands (${response.status}):`,
+			error
+		);
 		process.exit(1);
 	}
 
 	const result = await response.json();
 	console.log(
-		`Successfully registered ${(result as unknown[]).length} commands:`,
+		`Successfully registered global commands:`,
 		(result as Array<{ name: string }>).map((cmd) => cmd.name).join(", ")
 	);
 }
