@@ -14,6 +14,7 @@ import {
 import { validateRequest } from "./helpers/request-validation";
 import { CodeBlockError, MessageResponseError } from "./types/errors";
 import { InteractionLogger } from "./helpers/interaction-logger";
+import { capAutocompleteInteractionResponse } from "./helpers/autocomplete";
 import { Env } from "./types/env";
 
 async function handleSlashCommand(
@@ -88,7 +89,9 @@ async function handleAutocompleteCommand(
 
 	try {
 		logger.log("Executing autocomplete");
-		const response = await command.autocomplete(interaction, env);
+		const response = capAutocompleteInteractionResponse(
+			await command.autocomplete(interaction, env)
+		);
 		logger.log("Autocomplete completed successfully");
 		logger.finish("success");
 		return jsonResponse(response);

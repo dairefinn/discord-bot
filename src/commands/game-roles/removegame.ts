@@ -14,6 +14,7 @@ import {
 } from "../../types/discord";
 import { fetchMember, removeMemberRole } from "../../api/members";
 import { requireStringOption } from "../../helpers/command-validators";
+import { formatGameName } from "../../helpers/game-roles";
 import { MessageResponseError } from "../../types/errors";
 
 export const data: DiscordCommandData = {
@@ -58,10 +59,16 @@ export async function autocomplete(
 			);
 		}
 
-		const choices = roleOptions.map((r) => ({
-			name: r.name.replace(/ players$/i, ""),
-			value: r.name.replace(/ players$/i, ""),
-		}));
+		roleOptions.sort((a, b) =>
+			formatGameName(a)
+				.toLowerCase()
+				.localeCompare(formatGameName(b).toLowerCase())
+		);
+
+		const choices = roleOptions.map((r) => {
+			const short = formatGameName(r);
+			return { name: short, value: short };
+		});
 
 		return {
 			type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,

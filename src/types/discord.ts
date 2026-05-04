@@ -8,6 +8,7 @@ export interface DiscordUser {
 export interface DiscordMember {
 	user: DiscordUser;
 	roles: string[];
+	nick?: string | null;
 	voice?: {
 		channel_id: string;
 	};

@@ -9,9 +9,10 @@ import {
 	DiscordInteraction,
 	DiscordInteractionResponse,
 } from "../../types/discord";
-import { DiscordRole, fetchRoles } from "../../api/roles";
+import { fetchRoles } from "../../api/roles";
 import { fetchMember } from "../../api/members";
 import { getCommands } from "../../api/commands";
+import { formatGameName } from "../../helpers/game-roles";
 
 export const data: DiscordCommandData = {
 	name: "listgames",
@@ -42,9 +43,6 @@ export async function execute(
 			},
 		};
 	}
-
-	const formatGameName = (role: DiscordRole) =>
-		role.name.replace(/ players$/i, "");
 
 	const formatCommand = (cmd: DiscordCommandData | undefined) =>
 		cmd?.id ? `</${cmd.name}:${cmd.id}>` : cmd?.name ?? "";

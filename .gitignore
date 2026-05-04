@@ -5,3 +5,4 @@ transpiled
 wrangler.toml
 .dev.vars
 *.tsbuildinfo
+.wrangler

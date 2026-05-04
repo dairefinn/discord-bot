@@ -9,6 +9,7 @@ import * as addgame from "./game-roles/addgame";
 import * as removegame from "./game-roles/removegame";
 import * as registergame from "./game-roles/registergame";
 import * as unregistergame from "./game-roles/unregistergame";
+import * as listgame from "./game-roles/listgame";
 import * as listgames from "./game-roles/listgames";
 
 import * as echo from "./util/echo";
@@ -39,6 +40,7 @@ export const commands: { [key: string]: Command } = {
 	removegame,
 	registergame,
 	unregistergame,
+	listgame,
 	listgames,
 	echo,
 	ping,

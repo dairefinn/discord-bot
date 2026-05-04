@@ -7,35 +7,29 @@ import {
 	DiscordCommandData,
 	DiscordCommandOptionType,
 	DiscordCommandType,
-	DiscordGuild,
 	DiscordInteraction,
 	DiscordInteractionResponse,
-	DiscordMember,
 } from "../../types/discord";
-import { deleteRole, DiscordRole, fetchRoles } from "../../api/roles";
-import {
-	requireAdmin,
-	requireStringOption,
-} from "../../helpers/command-validators";
+import { DiscordRole, fetchRoles } from "../../api/roles";
+import { fetchGuildMembers } from "../../api/members";
 import { formatGameName } from "../../helpers/game-roles";
-import { fetchGuild } from "../../api/guilds";
-import { fetchMember } from "../../api/members";
+import { buildBulletMentionListContent } from "../../helpers/member-mention-list";
+import { requireStringOption } from "../../helpers/command-validators";
 import { MessageResponseError } from "../../types/errors";
 
 export const data: DiscordCommandData = {
-	name: "unregistergame",
-	description: "Unregister a game role",
+	name: "listgame",
+	description: "List all members who have a game role",
 	type: DiscordCommandType.CHAT_INPUT,
 	options: [
 		{
 			name: "name",
-			description: "The name of the game to unregister",
+			description: "Name of the game",
 			type: DiscordCommandOptionType.STRING,
 			required: true,
 			autocomplete: true,
 		},
 	],
-	default_member_permissions: "10000000",
 };
 
 export async function autocomplete(
@@ -53,16 +47,26 @@ export async function autocomplete(
 		);
 
 		if (focusedValue && typeof focusedValue === "string") {
-			roleOptions = roleOptions.filter((role) =>
-				role.name.toLowerCase().includes(focusedValue.toLowerCase())
+			const q = focusedValue.toLowerCase();
+			roleOptions = roleOptions.filter((role) => {
+				const short = formatGameName(role).toLowerCase();
+				return role.name.toLowerCase().includes(q) || short.includes(q);
+			});
+			roleOptions.sort((a, b) => {
+				const shortA = formatGameName(a).toLowerCase();
+				const shortB = formatGameName(b).toLowerCase();
+				const aStarts = shortA.startsWith(q) ? 0 : 1;
+				const bStarts = shortB.startsWith(q) ? 0 : 1;
+				if (aStarts !== bStarts) return aStarts - bStarts;
+				return shortA.localeCompare(shortB);
+			});
+		} else {
+			roleOptions.sort((a, b) =>
+				formatGameName(a)
+					.toLowerCase()
+					.localeCompare(formatGameName(b).toLowerCase())
 			);
 		}
-
-		roleOptions.sort((a, b) =>
-			formatGameName(a)
-				.toLowerCase()
-				.localeCompare(formatGameName(b).toLowerCase())
-		);
 
 		const choices = roleOptions.map((r) => {
 			const short = formatGameName(r);
@@ -89,19 +93,12 @@ export async function execute(
 	interaction: DiscordInteraction,
 	env: Env
 ): Promise<DiscordInteractionResponse> {
-	const guild: DiscordGuild = await fetchGuild(env, interaction.guild_id);
-	const member: DiscordMember = await fetchMember(
-		env,
-		interaction.guild_id,
-		interaction.member.user.id
-	);
-	const name: string = await requireStringOption(
+	const name = await requireStringOption(
 		interaction,
 		"name",
 		"Game name is required."
 	);
 	const roles: DiscordRole[] = await fetchRoles(interaction, env);
-	requireAdmin(roles, member, guild);
 
 	const roleName = `${name} players`;
 	const existingRole = roles.find(
@@ -109,16 +106,35 @@ export async function execute(
 	);
 
 	if (!existingRole) {
-		throw new MessageResponseError(`No role found for "${name}".`);
+		throw new MessageResponseError(`The role "${roleName}" does not exist.`);
 	}
 
-	await deleteRole(interaction, env, existingRole.id);
+	const members = await fetchGuildMembers(env, interaction.guild_id);
+	const withRole = members.filter((m) => m.roles.includes(existingRole.id));
+
+	const gameLabel = formatGameName(existingRole);
+
+	if (withRole.length === 0) {
+		return {
+			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
+			data: {
+				content: `**${gameLabel}**\n\nNo one has this role yet.`,
+				flags: InteractionResponseFlags.EPHEMERAL,
+			},
+		};
+	}
+
+	const { content, allowed_mentions } = buildBulletMentionListContent(
+		gameLabel,
+		withRole
+	);
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
 		data: {
-			content: `Deleted "${roleName}" role.`,
+			content,
 			flags: InteractionResponseFlags.EPHEMERAL,
+			allowed_mentions,
 		},
 	};
 }

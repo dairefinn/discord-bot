@@ -100,3 +100,99 @@ export async function removeMemberRole(
 
 	await assertResponseOk(removeRoleResponse, "remove role from member");
 }
+
+const GUILD_MEMBERS_PAGE_LIMIT = 1000;
+
+const MISSING_ACCESS_CODE = 50001;
+
+function handleListMembersFailure(
+	_response: Response,
+	errorBody: unknown
+): never {
+	const code =
+		errorBody &&
+		typeof errorBody === "object" &&
+		"code" in errorBody &&
+		typeof (errorBody as { code: unknown }).code === "number"
+			? (errorBody as { code: number }).code
+			: undefined;
+
+	if (code === MISSING_ACCESS_CODE) {
+		throw new MessageResponseError(
+			"This bot cannot list server members. In the Discord Developer Portal, open your application → Bot → enable **Server Members Intent** under Privileged Gateway Intents, save, then redeploy or restart the worker so the new intent applies."
+		);
+	}
+
+	throw new CodeBlockError(
+		"Failed to fetch guild members:",
+		JSON.stringify(errorBody)
+	);
+}
+
+/**
+ * Fetches all guild members via the List Guild Members endpoint (paginated).
+ * Requires the Server Members privileged intent (Developer Portal → Bot).
+ */
+export async function fetchGuildMembers(
+	env: Env,
+	guildId: string
+): Promise<DiscordMember[]> {
+	const all: DiscordMember[] = [];
+	let after: string | undefined;
+
+	try {
+		for (;;) {
+			const url = new URL(
+				`https://discord.com/api/v10/guilds/${guildId}/members`
+			);
+			url.searchParams.set("limit", String(GUILD_MEMBERS_PAGE_LIMIT));
+			if (after) {
+				url.searchParams.set("after", after);
+			}
+
+			const response = await fetch(url.toString(), {
+				headers: {
+					Authorization: `Bot ${env.DISCORD_TOKEN}`,
+				},
+			});
+
+			if (!response.ok) {
+				const errorBody = await response
+					.json()
+					.catch(() => response.statusText);
+				handleListMembersFailure(response, errorBody);
+			}
+
+			const page = (await response.json()) as DiscordMember[];
+			if (page.length === 0) {
+				break;
+			}
+
+			all.push(...page);
+
+			if (page.length < GUILD_MEMBERS_PAGE_LIMIT) {
+				break;
+			}
+
+			const last = page[page.length - 1];
+			if (!last?.user?.id) {
+				break;
+			}
+			after = last.user.id;
+		}
+	} catch (error) {
+		if (error instanceof MessageResponseError) {
+			throw error;
+		}
+		if (error instanceof Error) {
+			throw new CodeBlockError(
+				"Error fetching guild members:",
+				error.stack || error.message
+			);
+		}
+
+		throw error;
+	}
+
+	return all;
+}
