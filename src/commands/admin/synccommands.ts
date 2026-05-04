@@ -1,7 +1,3 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
 import { Env } from "../../types/env";
 import { bulkOverwriteCommands } from "../../api/commands";
 import { commands } from "..";
@@ -11,6 +7,7 @@ import {
 	DiscordInteraction,
 	DiscordInteractionResponse,
 } from "../../types/discord";
+import { ephemeralReply } from "../../helpers/interaction-reply";
 
 const ADMINISTRATOR_PERMISSION = "8";
 
@@ -27,33 +24,19 @@ export async function execute(
 ): Promise<DiscordInteractionResponse> {
 	const guildId = interaction.guild_id;
 	if (!guildId) {
-		return {
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: "This command can only be used in a server.",
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		};
+		return ephemeralReply("This command can only be used in a server.");
 	}
 
 	const commandsData = Object.values(commands).map((cmd) => cmd.data);
 
 	try {
 		await bulkOverwriteCommands(env, commandsData, guildId);
-		return {
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `Synced ${commandsData.length} commands to this server.`,
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		};
+		return ephemeralReply(
+			`Synced ${commandsData.length} commands to this server.`
+		);
 	} catch (err) {
-		return {
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `Failed to sync commands: ${(err as Error).message}`,
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		};
+		return ephemeralReply(
+			`Failed to sync commands: ${(err as Error).message}`
+		);
 	}
 }

@@ -1,8 +1,4 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-	InteractionType,
-} from "discord-interactions";
+import { InteractionResponseType, InteractionType } from "discord-interactions";
 import { commands, Command } from "./commands";
 import { DiscordInteraction } from "./types/discord";
 import {
@@ -15,6 +11,7 @@ import { validateRequest } from "./helpers/request-validation";
 import { CodeBlockError, MessageResponseError } from "./types/errors";
 import { InteractionLogger } from "./helpers/interaction-logger";
 import { capAutocompleteInteractionResponse } from "./helpers/autocomplete";
+import { ephemeralReply } from "./helpers/interaction-reply";
 import { Env } from "./types/env";
 
 async function handleSlashCommand(
@@ -53,13 +50,7 @@ async function handleSlashCommand(
 		logger.finish("error", error);
 		const errorMessage =
 			error instanceof Error ? error.message : "An error occurred";
-		return jsonResponse({
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: errorMessage,
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		});
+		return jsonResponse(ephemeralReply(errorMessage));
 	}
 }
 

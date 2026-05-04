@@ -1,7 +1,4 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
+import { InteractionResponseType } from "discord-interactions";
 import { Env } from "../../types/env";
 import { DiscordRole, fetchRoles, createRole } from "../../api/roles";
 import {
@@ -19,6 +16,9 @@ import {
 import { fetchGuild } from "../../api/guilds";
 import { fetchMember } from "../../api/members";
 import { getCommands } from "../../api/commands";
+import { findGamePlayersRole, gamePlayersRoleLabel } from "../../helpers/game-roles";
+import { ephemeralReply } from "../../helpers/interaction-reply";
+import { slashCommandMention } from "../../helpers/slash-command";
 
 export const data: DiscordCommandData = {
 	name: "registergame",
@@ -51,21 +51,13 @@ export async function execute(
 		"Game name is required."
 	);
 	const roles: DiscordRole[] = await fetchRoles(interaction, env);
-	requireAdmin(roles, member, guild);
+	await requireAdmin(roles, member, guild);
 
-	const roleName = `${name} players`;
-	const existingRole = roles.find(
-		(role) => role.name.toLowerCase() === roleName.toLowerCase()
-	);
+	const roleName = gamePlayersRoleLabel(name);
+	const existingRole = findGamePlayersRole(roles, name);
 
 	if (existingRole) {
-		return {
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: `A role for "${name}" already exists.`,
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		};
+		return ephemeralReply(`A role for "${name}" already exists.`);
 	}
 
 	const newRole: DiscordRole = await createRole(interaction, env, roleName);
@@ -73,9 +65,7 @@ export async function execute(
 	const addgameCmd: DiscordCommandData | undefined = registeredCommands.find(
 		(cmd) => cmd.name === "addgame"
 	);
-	const addgameMention: string = addgameCmd?.id
-		? `</${addgameCmd.name}:${addgameCmd.id}>`
-		: "/addgame";
+	const addgameMention = slashCommandMention(addgameCmd) || "/addgame";
 
 	return {
 		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,

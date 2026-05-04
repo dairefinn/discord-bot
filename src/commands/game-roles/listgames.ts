@@ -1,7 +1,3 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
 import { Env } from "../../types/env";
 import {
 	DiscordCommandData,
@@ -12,7 +8,9 @@ import {
 import { fetchRoles } from "../../api/roles";
 import { fetchMember } from "../../api/members";
 import { getCommands } from "../../api/commands";
-import { formatGameName } from "../../helpers/game-roles";
+import { formatGameName, getGamePlayerRoles } from "../../helpers/game-roles";
+import { ephemeralReply } from "../../helpers/interaction-reply";
+import { slashCommandMention } from "../../helpers/slash-command";
 
 export const data: DiscordCommandData = {
 	name: "listgames",
@@ -30,22 +28,11 @@ export async function execute(
 		getCommands(env),
 	]);
 
-	const gameRoles = roles
-		.filter((role) => role.name.toLowerCase().endsWith(" players"))
-		.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+	const gameRoles = getGamePlayerRoles(roles);
 
 	if (gameRoles.length === 0) {
-		return {
-			type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-			data: {
-				content: "No games are registered yet.",
-				flags: InteractionResponseFlags.EPHEMERAL,
-			},
-		};
+		return ephemeralReply("No games are registered yet.");
 	}
-
-	const formatCommand = (cmd: DiscordCommandData | undefined) =>
-		cmd?.id ? `</${cmd.name}:${cmd.id}>` : cmd?.name ?? "";
 
 	const addgameCmd = registeredCommands.find((c) => c.name === "addgame");
 	const removegameCmd = registeredCommands.find((c) => c.name === "removegame");
@@ -55,14 +42,14 @@ export async function execute(
 			title: "🎮 Your Games",
 			roles: gameRoles.filter((r) => member.roles.includes(r.id)),
 			hint: removegameCmd
-				? `Use ${formatCommand(removegameCmd)} to leave a game role.`
+				? `Use ${slashCommandMention(removegameCmd)} to leave a game role.`
 				: "",
 		},
 		{
 			title: "📋 Available Games",
 			roles: gameRoles.filter((r) => !member.roles.includes(r.id)),
 			hint: addgameCmd
-				? `Use ${formatCommand(addgameCmd)} to join a game role.`
+				? `Use ${slashCommandMention(addgameCmd)} to join a game role.`
 				: "",
 		},
 	];
@@ -77,11 +64,5 @@ export async function execute(
 		})
 		.join("\n\n");
 
-	return {
-		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-		data: {
-			content,
-			flags: InteractionResponseFlags.EPHEMERAL,
-		},
-	};
+	return ephemeralReply(content);
 }

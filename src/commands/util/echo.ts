@@ -1,14 +1,11 @@
 import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
-import {
 	DiscordCommandData,
 	DiscordCommandOptionType,
 	DiscordCommandType,
 	DiscordInteraction,
 	DiscordInteractionResponse,
 } from "../../types/discord";
+import { ephemeralReply } from "../../helpers/interaction-reply";
 import { MessageResponseError } from "../../types/errors";
 
 /**
@@ -40,11 +37,5 @@ export async function execute(
 		throw new MessageResponseError("Please provide a message to echo.");
 	}
 
-	return {
-		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-		data: {
-			content: message,
-			flags: InteractionResponseFlags.EPHEMERAL,
-		},
-	};
+	return ephemeralReply(message);
 }

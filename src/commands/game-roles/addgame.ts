@@ -1,7 +1,3 @@
-import {
-	InteractionResponseFlags,
-	InteractionResponseType,
-} from "discord-interactions";
 import { Env } from "../../types/env";
 import {
 	DiscordCommandData,
@@ -12,8 +8,14 @@ import {
 	DiscordMember,
 } from "../../types/discord";
 import { DiscordRole, fetchRoles } from "../../api/roles";
+import {
+	autocompleteResult,
+	getAutocompleteFocus,
+} from "../../helpers/autocomplete";
 import { requireStringOption } from "../../helpers/command-validators";
-import { formatGameName } from "../../helpers/game-roles";
+import { buildSimpleGameRoleAutocompleteChoices } from "../../helpers/game-role-autocomplete";
+import { findGamePlayersRole, gamePlayersRoleLabel } from "../../helpers/game-roles";
+import { ephemeralReply } from "../../helpers/interaction-reply";
 import { addMemberRole, fetchMember } from "../../api/members";
 import { MessageResponseError } from "../../types/errors";
 
@@ -36,54 +38,25 @@ export async function autocomplete(
 	interaction: DiscordInteraction,
 	env: Env
 ): Promise<DiscordInteractionResponse> {
-	const focusedOption = interaction.data?.options?.find((opt) => opt.focused);
-	const focusedValue = focusedOption?.value || "";
+	const { optionName, value: focusedValue } = getAutocompleteFocus(interaction);
 
-	if (focusedOption?.name === "name") {
+	if (optionName === "name") {
 		const roles: DiscordRole[] = await fetchRoles(interaction, env);
 		const member: DiscordMember = await fetchMember(
 			env,
 			interaction.guild_id,
 			interaction.member.user.id
 		);
-
-		let roleOptions = roles.filter(
-			(role) =>
-				role.name.toLowerCase().endsWith(" players") &&
-				!member.roles.includes(role.id)
+		return autocompleteResult(
+			buildSimpleGameRoleAutocompleteChoices(
+				focusedValue,
+				roles,
+				(role) => !member.roles.includes(role.id)
+			)
 		);
-
-		if (focusedValue && typeof focusedValue === "string") {
-			roleOptions = roleOptions.filter((role) =>
-				role.name.toLowerCase().includes(focusedValue.toLowerCase())
-			);
-		}
-
-		roleOptions.sort((a, b) =>
-			formatGameName(a)
-				.toLowerCase()
-				.localeCompare(formatGameName(b).toLowerCase())
-		);
-
-		const choices = roleOptions.map((r) => {
-			const short = formatGameName(r);
-			return { name: short, value: short };
-		});
-
-		return {
-			type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-			data: {
-				choices,
-			},
-		};
 	}
 
-	return {
-		type: InteractionResponseType.APPLICATION_COMMAND_AUTOCOMPLETE_RESULT,
-		data: {
-			choices: [],
-		},
-	};
+	return autocompleteResult([]);
 }
 
 export async function execute(
@@ -101,11 +74,8 @@ export async function execute(
 		"Game name is required."
 	);
 	const roles: DiscordRole[] = await fetchRoles(interaction, env);
-
-	const roleName = `${name} players`;
-	const existingRole = roles.find(
-		(role) => role.name.toLowerCase() === roleName.toLowerCase()
-	);
+	const roleName = gamePlayersRoleLabel(name);
+	const existingRole = findGamePlayersRole(roles, name);
 
 	if (!existingRole) {
 		throw new MessageResponseError(`The role "${roleName}" does not exist.`);
@@ -122,11 +92,5 @@ export async function execute(
 		existingRole.id
 	);
 
-	return {
-		type: InteractionResponseType.CHANNEL_MESSAGE_WITH_SOURCE,
-		data: {
-			content: `You've been added to the "${roleName}" role.`,
-			flags: InteractionResponseFlags.EPHEMERAL,
-		},
-	};
+	return ephemeralReply(`You've been added to the "${roleName}" role.`);
 }
