@@ -2,10 +2,11 @@
 
 /**
  * One-time bootstrap script to register all slash commands with Discord.
+ * Run `yarn register` when the bot is first added to a guild so slash commands exist there.
  * After running this once, use the /synccommands slash command to sync future changes.
  *
  * Usage:
- *   npm run register
+ *   yarn register
  *
  * Requires DISCORD_TOKEN to be set in .dev.vars or as an environment variable.
  * Reads DISCORD_APPLICATION_ID and DISCORD_GUILD_ID from wrangler.toml.
