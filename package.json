@@ -8,6 +8,7 @@
 		"lint": "yarn check:prettier && yarn check:eslint && yarn check:tsc",
 		"check:prettier": "prettier --check --no-error-on-unmatched-pattern '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
 		"check:eslint": "eslint --max-warnings=0 src",
+		"fix:eslint": "eslint --fix --max-warnings=0 src",
 		"check:tsc": "tsc --noEmit",
 		"fix:prettier": "prettier --write --no-error-on-unmatched-pattern '*.{json,js}' 'src/**/*.{js,ts}' 'test/**/*.{js,ts}'",
 		"test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
